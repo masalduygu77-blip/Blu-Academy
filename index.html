@@ -86,7 +86,7 @@
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Antrenör Şifresi (En Fazla 5 Rakam)</label>
-          <input type="password" id="coachLoginPass" inputmode="numeric" pattern="\d{1,5}" maxlength="5" placeholder="Örn: 4821" required
+          <input type="password" id="coachLoginPass" inputmode="numeric" pattern="\d{1,5}" maxlength="5" placeholder="Örn: 1234" required
             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
         </div>
         <button type="submit" class="w-full blu-gradient text-white font-semibold py-2.5 rounded-xl shadow hover:opacity-95 transition">
@@ -137,6 +137,11 @@
       </div>
     </div>
 
+    <!-- Sadece Yönetici: Antrenör Sekmeleri -->
+    <div id="coachTabsBar" class="hidden bg-white p-3 rounded-2xl border border-sky-100 shadow-sm">
+      <div id="coachTabsContainer" class="flex flex-wrap items-center gap-2"></div>
+    </div>
+
     <!-- Sadece Yönetici: Antrenör Ekleme & Listesi -->
     <div id="coachManagementSection" class="hidden bg-white p-5 rounded-2xl border border-sky-100 shadow-sm space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
@@ -149,7 +154,7 @@
       <form onsubmit="addCoach(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label class="block text-[11px] font-semibold text-slate-500 mb-1">Antrenör Adı Soyadı</label>
-          <input type="text" id="cName" placeholder="Örn: Ahmet Yılmaz" required
+          <input type="text" id="cName" placeholder="Örn: Ahmet Hoca" required
             class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
         </div>
         <div>
@@ -349,12 +354,50 @@
       </form>
     </div>
 
+    <!-- Yoklama Kaydı Düzenleme Kutusu (Yetkili) -->
+    <div id="attendanceEditorCard" class="hidden bg-white p-5 rounded-2xl border border-sky-200 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700">YOKLAMA KAYDINI DÜZENLE</span>
+          <h4 id="attendanceEditorTitle" class="text-base font-bold text-slate-900">Tarihli Yoklama Güncelle</h4>
+        </div>
+        <button onclick="closeAttendanceEditor()" class="text-xs font-semibold text-slate-500 hover:text-slate-800 px-3 py-1 rounded-lg border border-slate-200">
+          Kapat
+        </button>
+      </div>
+      <form onsubmit="saveAttendanceEdit(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+        <input type="hidden" id="attStudentId" />
+        <input type="hidden" id="attRecordId" />
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tarih / Saat</label>
+          <input type="text" id="editAttDate" required
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Yoklama Durumu</label>
+          <select id="editAttStatus" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="Geldi">Geldi</option>
+            <option value="Gelmedi">Gelmedi</option>
+            <option value="Telafi">Telafi</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Hastalık / Not (İsteğe Bağlı)</label>
+          <input type="text" id="editAttNote" placeholder="Örn: Hastalık nedeniyle telafi"
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <button type="submit" class="blu-gradient text-white font-semibold text-sm py-2.5 px-4 rounded-xl shadow hover:opacity-95 transition">
+          Yoklamayı Güncelle
+        </button>
+      </form>
+    </div>
+
     <!-- Yüzücü Listesi, Yoklama Geçmişi & Ders Hakkı -->
     <div class="bg-white rounded-2xl border border-sky-100 shadow-sm overflow-hidden">
       <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 class="text-base font-bold text-slate-900">Yüzücü Listesi, Yoklama Kaydı & Ders Hakları</h3>
-          <p class="text-xs text-slate-500 mt-0.5">Tarihli katılım/devamsızlık geçmişi ve veli kartını görmek için yüzücü adına tıklayın.</p>
+          <h3 id="studentTableTitle" class="text-base font-bold text-slate-900">Yüzücü Listesi, Yoklama Kaydı & Ders Hakları</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Tarihli katılım/devamsızlık/telafi geçmişini düzenlemek ve veli kartını görmek için yüzücü adına tıklayın.</p>
         </div>
         <input type="text" id="searchInput" oninput="renderStudents()" placeholder="İsim, hoca, veli veya grup ara..."
           class="px-3.5 py-1.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
@@ -404,7 +447,7 @@
     let useCloud = false;
     let students = [];
     let coaches = [];
-    let activeSession = null;
+    let activeSession = null; // { role: 'admin', activeCoachTab?: string, inspectedStudentId?: string } | { role: 'coach', coachName: string, inspectedStudentId?: string } | { role: 'parent', parentName: string, parentPassword: string }
 
     const statusBadge = document.getElementById("cloudStatus");
 
@@ -443,6 +486,16 @@
       return "Temel Eğitim";
     }
 
+    function normalizeAttendanceList(rawList) {
+      if (!Array.isArray(rawList)) return [];
+      return rawList.map((item, idx) => ({
+        id: item && item.id ? String(item.id) : `att_${idx}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        date: item && item.date ? String(item.date) : formatNowDateTime(),
+        status: item && (item.status === "Geldi" || item.status === "Gelmedi" || item.status === "Telafi") ? item.status : "Geldi",
+        note: item && typeof item.note === "string" ? item.note : ""
+      }));
+    }
+
     function normalizeStudent(docId, data) {
       const pInfo = getParentDetails(data);
       const rawPin = data.parentPassword;
@@ -463,7 +516,7 @@
       return {
         id: docId,
         remainingLessons: typeof data.remainingLessons === "number" ? data.remainingLessons : DEFAULT_LESSONS,
-        attendanceHistory: Array.isArray(data.attendanceHistory) ? data.attendanceHistory : [],
+        attendanceHistory: normalizeAttendanceList(data.attendanceHistory),
         birthDate: data.birthDate || "",
         parentName: pInfo.parentName,
         parentPhone: pInfo.parentPhone,
@@ -482,7 +535,8 @@
         group: normalizeGroup(data.group),
         coachName,
         ownerRole,
-        parentPassword
+        parentPassword,
+        attendanceHistory: normalizeAttendanceList(data.attendanceHistory)
       };
     }
 
@@ -506,6 +560,7 @@
           };
         });
         renderCoachList();
+        renderCoachTabs();
       }, (err) => {
         console.error(err);
       });
@@ -525,9 +580,25 @@
       return activeSession && activeSession.role === "coach";
     }
 
+    function getAdminSelectedCoachTab() {
+      return (activeSession && activeSession.activeCoachTab) ? activeSession.activeCoachTab : "__ADMIN__";
+    }
+
+    function selectAdminCoachTab(tabKey) {
+      if (!isAdminSession()) return;
+      persistSession({ ...activeSession, activeCoachTab: tabKey, inspectedStudentId: null });
+      closeAttendanceEditor();
+      renderCoachTabs();
+      renderStudents();
+    }
+
     function getVisibleStudents() {
       if (isAdminSession()) {
-        return students.filter(s => s.ownerRole !== "coach");
+        const tab = getAdminSelectedCoachTab();
+        if (tab === "__ADMIN__") {
+          return students.filter(s => s.ownerRole !== "coach");
+        }
+        return students.filter(s => s.ownerRole === "coach" && (s.coachName || "").trim().toLowerCase() === tab.toLowerCase());
       }
       if (isCoachSession()) {
         const cName = (activeSession.coachName || "").trim().toLowerCase();
@@ -570,6 +641,7 @@
           renderStudentInspection(activeSession.inspectedStudentId);
         } else {
           showStaffPanel("admin");
+          renderCoachTabs();
           renderCoachList();
           renderStudents();
         }
@@ -665,11 +737,13 @@
       document.getElementById("logoutBtn").classList.remove("hidden");
 
       const isAdmin = role === "admin";
+      document.getElementById("coachTabsBar").classList.toggle("hidden", !isAdmin);
       document.getElementById("coachManagementSection").classList.toggle("hidden", !isAdmin);
       document.getElementById("editCoachWrap").classList.toggle("hidden", !isAdmin);
       if (!isAdmin) {
         closeStudentEditor();
         closePerfEditor();
+        closeAttendanceEditor();
       }
       document.getElementById("headerSubtitle").textContent = isAdmin
         ? "Yönetici Yönetim Paneli"
@@ -683,7 +757,7 @@
       document.getElementById("backToAdminBtn").classList.add("hidden");
       document.getElementById("logoutBtn").classList.remove("hidden");
       document.getElementById("headerSubtitle").textContent = "Veli Bilgilendirme Ekranı";
-      renderParentCards(matches);
+      renderParentCards(matches, false);
     }
 
     function openStudentDetailAsStaff(studentId) {
@@ -693,8 +767,7 @@
     }
 
     function renderStudentInspection(studentId) {
-      const pool = getVisibleStudents();
-      const target = pool.find(s => s.id === studentId);
+      const target = students.find(s => s.id === studentId);
       if (!target) {
         persistSession({ ...activeSession, inspectedStudentId: null });
         refreshActiveView();
@@ -705,8 +778,8 @@
       document.getElementById("parentSection").classList.remove("hidden");
       document.getElementById("backToAdminBtn").classList.remove("hidden");
       document.getElementById("logoutBtn").classList.remove("hidden");
-      document.getElementById("headerSubtitle").textContent = `Öğrenci Detayı (Veli Görünümü): ${target.name}`;
-      renderParentCards([target]);
+      document.getElementById("headerSubtitle").textContent = `Öğrenci Detayı & Yoklama Yönetimi: ${target.name}`;
+      renderParentCards([target], isAdminSession());
     }
 
     function backToAdminPanel() {
@@ -719,8 +792,9 @@
       e.preventDefault();
       const pass = document.getElementById("adminPass").value.trim();
       if (ADMIN_PASSWORDS.includes(pass)) {
-        persistSession({ role: "admin", inspectedStudentId: null });
+        persistSession({ role: "admin", activeCoachTab: "__ADMIN__", inspectedStudentId: null });
         showStaffPanel("admin");
+        renderCoachTabs();
         renderCoachList();
         renderStudents();
       } else {
@@ -797,10 +871,12 @@
       }
       e.target.reset();
       renderCoachList();
+      renderCoachTabs();
     }
 
     async function deleteCoach(coachId) {
       if (!isAdminSession()) return;
+      const targetCoach = coaches.find(c => c.id === coachId);
       if (!confirm("Bu antrenör kaydını silmek istediğinize emin misiniz?")) return;
       if (useCloud && db) {
         await db.collection("coaches").doc(coachId).delete();
@@ -808,7 +884,42 @@
         coaches = coaches.filter(c => c.id !== coachId);
         saveLocal();
       }
+      if (targetCoach && getAdminSelectedCoachTab().toLowerCase() === targetCoach.name.toLowerCase()) {
+        persistSession({ ...activeSession, activeCoachTab: "__ADMIN__" });
+      }
       renderCoachList();
+      renderCoachTabs();
+      renderStudents();
+    }
+
+    function renderCoachTabs() {
+      const container = document.getElementById("coachTabsContainer");
+      if (!container || !isAdminSession()) return;
+
+      const selectedTab = getAdminSelectedCoachTab();
+      const adminCount = students.filter(s => s.ownerRole !== "coach").length;
+
+      const tabs = [
+        { key: "__ADMIN__", label: `Benim Sporcularım (${adminCount})` },
+        ...coaches.map(c => {
+          const cnt = students.filter(s => s.ownerRole === "coach" && (s.coachName || "").trim().toLowerCase() === c.name.toLowerCase()).length;
+          return { key: c.name, label: `${c.name} (${cnt})` };
+        })
+      ];
+
+      container.innerHTML = tabs.map(t => {
+        const isActive = selectedTab.toLowerCase() === t.key.toLowerCase();
+        return `
+          <button onclick="selectAdminCoachTab('${t.key.replace(/'/g, "\\'")}')"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+              isActive
+                ? "blu-gradient text-white shadow-sm"
+                : "bg-sky-50 text-slate-700 hover:bg-sky-100 border border-sky-100"
+            }">
+            ${t.label}
+          </button>
+        `;
+      }).join("");
     }
 
     function renderCoachList() {
@@ -852,12 +963,34 @@
       `;
     }
 
-    function renderParentCards(matches) {
+    function getAttendanceBadgeStyle(status) {
+      if (status === "Geldi") {
+        return {
+          box: "bg-emerald-50/70 border-emerald-200/80",
+          badge: "bg-emerald-100 text-emerald-700",
+          label: "Geldi"
+        };
+      }
+      if (status === "Telafi") {
+        return {
+          box: "bg-sky-50/80 border-sky-200/80",
+          badge: "bg-sky-100 text-sky-700",
+          label: "Telafi"
+        };
+      }
+      return {
+        box: "bg-rose-50/70 border-rose-200/80",
+        badge: "bg-rose-100 text-rose-700",
+        label: "Gelmedi"
+      };
+    }
+
+    function renderParentCards(matches, allowAttendanceManage = false) {
       const container = document.getElementById("parentResults");
 
       container.innerHTML = matches.map(s => {
         const lessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
-        const history = Array.isArray(s.attendanceHistory) ? s.attendanceHistory : [];
+        const history = normalizeAttendanceList(s.attendanceHistory);
         const lowLessonsWarning = lessons <= 2;
         const pInfo = getParentDetails(s);
         const birthFormatted = formatBirthDate(s.birthDate);
@@ -866,16 +999,27 @@
         const historyHtml = history.length === 0
           ? `<div class="text-xs text-slate-400 py-4 text-center">Henüz tarihli yoklama kaydı bulunmuyor.</div>`
           : history.map(item => {
-              const isPresent = item.status === "Geldi";
+              const st = getAttendanceBadgeStyle(item.status);
               return `
-                <div class="p-3 rounded-xl border flex items-center justify-between gap-3 ${isPresent ? 'bg-emerald-50/70 border-emerald-200/80' : 'bg-rose-50/70 border-rose-200/80'}">
+                <div class="p-3 rounded-xl border flex flex-wrap items-center justify-between gap-3 ${st.box}">
                   <div>
                     <div class="text-xs font-bold text-slate-800">Yüzme Dersi (${s.group})</div>
                     <div class="text-[11px] text-slate-500 mt-0.5">${item.date || ''}</div>
+                    ${item.note ? `<div class="text-[11px] font-medium text-slate-600 mt-0.5">Not: ${item.note}</div>` : ""}
                   </div>
-                  <span class="px-2.5 py-0.5 rounded-md text-xs font-semibold ${isPresent ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
-                    ${isPresent ? 'Geldi' : 'Gelmedi'}
-                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded-md text-xs font-semibold ${st.badge}">
+                      ${st.label}
+                    </span>
+                    ${allowAttendanceManage ? `
+                      <button onclick="openAttendanceEditorFromDetail('${s.id}', '${item.id}')" class="text-[11px] font-semibold text-blue-700 hover:underline">
+                        Düzenle
+                      </button>
+                      <button onclick="deleteAttendanceRecord('${s.id}', '${item.id}')" class="text-[11px] font-semibold text-rose-600 hover:underline">
+                        Sil
+                      </button>
+                    ` : ""}
+                  </div>
                 </div>
               `;
             }).join("");
@@ -976,6 +1120,7 @@
       persistSession(null);
       closePerfEditor();
       closeStudentEditor();
+      closeAttendanceEditor();
       showLoginScreen();
     }
 
@@ -1139,16 +1284,127 @@
       closePerfEditor();
     }
 
+    function openAttendanceEditor(studentId, recordId) {
+      if (!isAdminSession()) return;
+      const s = students.find(x => x.id === studentId);
+      if (!s) return;
+      const list = normalizeAttendanceList(s.attendanceHistory);
+      const target = list.find(item => item.id === recordId);
+      if (!target) return;
+
+      document.getElementById("attStudentId").value = s.id;
+      document.getElementById("attRecordId").value = target.id;
+      document.getElementById("attendanceEditorTitle").textContent = `${s.name} — Yoklama Kaydını Düzenle`;
+      document.getElementById("editAttDate").value = target.date || formatNowDateTime();
+      document.getElementById("editAttStatus").value = target.status || "Geldi";
+      document.getElementById("editAttNote").value = target.note || "";
+
+      document.getElementById("attendanceEditorCard").classList.remove("hidden");
+      document.getElementById("attendanceEditorCard").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function openAttendanceEditorFromDetail(studentId, recordId) {
+      if (!isAdminSession()) return;
+      persistSession({ ...activeSession, inspectedStudentId: null });
+      showStaffPanel("admin");
+      renderCoachTabs();
+      renderStudents();
+      openAttendanceEditor(studentId, recordId);
+    }
+
+    function closeAttendanceEditor() {
+      document.getElementById("attendanceEditorCard").classList.add("hidden");
+      document.getElementById("attStudentId").value = "";
+      document.getElementById("attRecordId").value = "";
+    }
+
+    async function saveAttendanceEdit(e) {
+      e.preventDefault();
+      if (!isAdminSession()) return;
+      const studentId = document.getElementById("attStudentId").value;
+      const recordId = document.getElementById("attRecordId").value;
+      const s = students.find(x => x.id === studentId);
+      if (!s) return;
+
+      const list = normalizeAttendanceList(s.attendanceHistory);
+      const idx = list.findIndex(item => item.id === recordId);
+      if (idx === -1) return;
+
+      const oldStatus = list[idx].status;
+      const newStatus = document.getElementById("editAttStatus").value;
+      const newDate = document.getElementById("editAttDate").value.trim() || list[idx].date;
+      const newNote = document.getElementById("editAttNote").value.trim();
+
+      let nextLessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
+      if (oldStatus === "Geldi" && newStatus !== "Geldi") {
+        nextLessons += 1;
+      } else if (oldStatus !== "Geldi" && newStatus === "Geldi") {
+        nextLessons = Math.max(0, nextLessons - 1);
+      }
+
+      list[idx] = {
+        ...list[idx],
+        date: newDate,
+        status: newStatus,
+        note: newNote
+      };
+
+      if (useCloud && db) {
+        await db.collection("students").doc(studentId).update({
+          remainingLessons: nextLessons,
+          attendanceHistory: list
+        });
+      } else {
+        s.remainingLessons = nextLessons;
+        s.attendanceHistory = list;
+        saveLocal();
+      }
+      closeAttendanceEditor();
+    }
+
+    async function deleteAttendanceRecord(studentId, recordId) {
+      if (!isAdminSession()) return;
+      const s = students.find(x => x.id === studentId);
+      if (!s) return;
+      const list = normalizeAttendanceList(s.attendanceHistory);
+      const target = list.find(item => item.id === recordId);
+      if (!target) return;
+      if (!confirm("Bu yoklama kaydını silmek istediğinize emin misiniz?")) return;
+
+      const nextList = list.filter(item => item.id !== recordId);
+      let nextLessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
+      if (target.status === "Geldi") {
+        nextLessons += 1;
+      }
+
+      if (useCloud && db) {
+        await db.collection("students").doc(studentId).update({
+          remainingLessons: nextLessons,
+          attendanceHistory: nextList
+        });
+      } else {
+        s.remainingLessons = nextLessons;
+        s.attendanceHistory = nextList;
+        saveLocal();
+      }
+    }
+
     async function recordAttendance(id, status) {
       if (!activeSession || (!isAdminSession() && !isCoachSession())) return;
       const s = students.find(x => x.id === id);
       if (!s) return;
 
       const currentLessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
+      // Telafi ve Gelmedi durumlarında ders hakkından düşülmez; yalnızca Geldi durumunda 1 düşer.
       const nextLessons = status === "Geldi" ? Math.max(0, currentLessons - 1) : currentLessons;
       const nextHistory = [
-        { date: formatNowDateTime(), status },
-        ...(Array.isArray(s.attendanceHistory) ? s.attendanceHistory : [])
+        {
+          id: `att_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          date: formatNowDateTime(),
+          status,
+          note: status === "Telafi" ? "Telafi dersi" : ""
+        },
+        ...normalizeAttendanceList(s.attendanceHistory)
       ];
 
       if (useCloud && db) {
@@ -1202,6 +1458,14 @@
 
     function renderStudents() {
       const pool = getVisibleStudents();
+      const titleEl = document.getElementById("studentTableTitle");
+      if (titleEl && isAdminSession()) {
+        const tab = getAdminSelectedCoachTab();
+        titleEl.textContent = tab === "__ADMIN__"
+          ? "Yüzücü Listesi (Benim Sporcularım), Yoklama Kaydı & Ders Hakları"
+          : `${tab} — Sporcu Listesi & Tüm Yoklama Kayıtları`;
+      }
+
       const filter = (document.getElementById("searchInput")?.value || "").toLowerCase();
       const filtered = pool.filter(s => {
         const pInfo = getParentDetails(s);
@@ -1233,12 +1497,33 @@
         const lessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
         const pInfo = getParentDetails(s);
         const birthFormatted = formatBirthDate(s.birthDate);
-        const historyCount = Array.isArray(s.attendanceHistory) ? s.attendanceHistory.length : 0;
+        const history = normalizeAttendanceList(s.attendanceHistory);
+        const historyCount = history.length;
         const perf = s.performanceTimes || {};
         const coachLabel = s.coachName || ADMIN_COACH_LABEL;
         const payClass = s.paid
           ? "bg-emerald-100 text-emerald-700 border-emerald-200"
           : "bg-amber-100 text-amber-700 border-amber-200";
+
+        const recentHistoryHtml = canManageAdmin && history.length > 0
+          ? `
+            <div class="mt-2 space-y-1 max-h-28 overflow-y-auto pr-1">
+              ${history.map(item => {
+                const st = getAttendanceBadgeStyle(item.status);
+                return `
+                  <div class="flex items-center justify-between gap-1.5 text-[11px] bg-slate-50 border border-slate-200/80 rounded-lg px-2 py-1">
+                    <span class="text-slate-600 truncate">${item.date}</span>
+                    <span class="px-1.5 py-0.5 rounded font-semibold ${st.badge}">${st.label}</span>
+                    <span class="flex items-center gap-1 shrink-0">
+                      <button onclick="openAttendanceEditor('${s.id}', '${item.id}')" class="text-blue-700 hover:underline font-semibold">Düzenle</button>
+                      <button onclick="deleteAttendanceRecord('${s.id}', '${item.id}')" class="text-rose-600 hover:underline font-semibold">Sil</button>
+                    </span>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          `
+          : "";
 
         const perfSummaryHtml = s.group === "Performans"
           ? `
@@ -1324,7 +1609,12 @@
                   class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-100 text-rose-700 hover:bg-rose-200 transition">
                   + Gelmedi
                 </button>
+                <button onclick="recordAttendance('${s.id}', 'Telafi')"
+                  class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-100 text-sky-700 hover:bg-sky-200 transition">
+                  + Telafi
+                </button>
               </div>
+              ${recentHistoryHtml}
             </td>
             <td class="py-3 px-4">
               ${paymentCellHtml}
