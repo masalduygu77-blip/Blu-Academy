@@ -33,7 +33,7 @@
           Bulut Bağlanıyor...
         </span>
         <button id="backToAdminBtn" onclick="backToAdminPanel()" class="hidden text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 px-3.5 py-1.5 rounded-lg transition">
-          ← Yönetici Paneli
+          ← Panele Dön
         </button>
         <button id="logoutBtn" onclick="logout()" class="hidden text-xs font-semibold bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-lg transition">
           Çıkış Yap
@@ -53,15 +53,19 @@
         <p class="text-sm text-slate-500 mt-1">Devam etmek için giriş türünü seçin</p>
       </div>
 
-      <div class="grid grid-cols-2 gap-2 p-1 bg-sky-50 rounded-xl mb-6">
-        <button id="tabAdmin" onclick="switchLoginTab('admin')" class="py-2 text-sm font-semibold rounded-lg bg-white text-blue-700 shadow-sm transition">
-          Yönetici Girişi
+      <div class="grid grid-cols-3 gap-1.5 p-1 bg-sky-50 rounded-xl mb-6">
+        <button id="tabAdmin" onclick="switchLoginTab('admin')" class="py-2 text-xs sm:text-sm font-semibold rounded-lg bg-white text-blue-700 shadow-sm transition">
+          Yönetici
         </button>
-        <button id="tabParent" onclick="switchLoginTab('parent')" class="py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-blue-700 transition">
-          Veli Girişi
+        <button id="tabCoach" onclick="switchLoginTab('coach')" class="py-2 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 hover:text-blue-700 transition">
+          Antrenör
+        </button>
+        <button id="tabParent" onclick="switchLoginTab('parent')" class="py-2 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 hover:text-blue-700 transition">
+          Veli
         </button>
       </div>
 
+      <!-- Yönetici Girişi -->
       <form id="adminForm" onsubmit="handleAdminLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Yönetici Şifresi</label>
@@ -73,6 +77,24 @@
         </button>
       </form>
 
+      <!-- Antrenör Girişi -->
+      <form id="coachForm" onsubmit="handleCoachLogin(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Antrenör Adı Soyadı</label>
+          <input type="text" id="coachLoginName" placeholder="Kayıtlı antrenör ad soyadı" required
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Antrenör Şifresi (En Fazla 5 Rakam)</label>
+          <input type="password" id="coachLoginPass" inputmode="numeric" pattern="\d{1,5}" maxlength="5" placeholder="Örn: 4821" required
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+        </div>
+        <button type="submit" class="w-full blu-gradient text-white font-semibold py-2.5 rounded-xl shadow hover:opacity-95 transition">
+          Antrenör Panelini Aç
+        </button>
+      </form>
+
+      <!-- Veli Girişi -->
       <form id="parentForm" onsubmit="handleParentLogin(event)" class="space-y-4 hidden">
         <div>
           <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Veli Adı Soyadı</label>
@@ -80,8 +102,8 @@
             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Veli Şifresi (Kişiye Özel)</label>
-          <input type="text" id="parentPassInput" placeholder="Size verilen veli şifresini girin" required
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Veli Şifresi (En Fazla 5 Rakam)</label>
+          <input type="text" id="parentPassInput" inputmode="numeric" pattern="\d{1,5}" maxlength="5" placeholder="Örn: 58392" required
             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
         </div>
         <button type="submit" class="w-full blu-gradient text-white font-semibold py-2.5 rounded-xl shadow hover:opacity-95 transition">
@@ -93,12 +115,12 @@
     </div>
   </main>
 
-  <!-- YÖNETİCİ PANELİ -->
+  <!-- YÖNETİCİ / ANTRENÖR PANELİ -->
   <section id="adminSection" class="hidden flex-1 max-w-6xl w-full mx-auto px-4 py-6 space-y-6">
     <!-- Özet Kartlar -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
       <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-sm">
-        <p class="text-xs text-slate-500 font-medium">Toplam Yüzücü</p>
+        <p class="text-xs text-slate-500 font-medium">Görünen Yüzücü</p>
         <p id="statTotal" class="text-2xl font-extrabold text-blue-700 mt-1">0</p>
       </div>
       <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-sm">
@@ -113,6 +135,36 @@
         <p class="text-xs text-slate-500 font-medium">Ödeme Bekleyen</p>
         <p id="statUnpaid" class="text-2xl font-extrabold text-amber-600 mt-1">0</p>
       </div>
+    </div>
+
+    <!-- Sadece Yönetici: Antrenör Ekleme & Listesi -->
+    <div id="coachManagementSection" class="hidden bg-white p-5 rounded-2xl border border-sky-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Antrenör Ekleme</h3>
+          <p class="text-xs text-slate-500">Her antrenör kendi sporcusunu ekleyebilir ve yoklama alabilir; diğer yetkiler sizdedir.</p>
+        </div>
+      </div>
+
+      <form onsubmit="addCoach(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 mb-1">Antrenör Adı Soyadı</label>
+          <input type="text" id="cName" placeholder="Örn: Ahmet Yılmaz" required
+            class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 mb-1">Antrenör Şifresi (En Fazla 5 Rakam)</label>
+          <input type="text" id="cPass" inputmode="numeric" pattern="\d{1,5}" maxlength="5" placeholder="Örn: 1234" required
+            class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div class="flex items-end">
+          <button type="submit" class="w-full blu-gradient text-white font-semibold text-sm py-2.5 px-4 rounded-xl shadow hover:opacity-95 transition">
+            + Antrenör Ekle
+          </button>
+        </div>
+      </form>
+
+      <div id="coachListContainer" class="flex flex-wrap gap-2 pt-1"></div>
     </div>
 
     <!-- Yeni Yüzücü Ekleme Formu (Varsayılan 8 Ders) -->
@@ -146,8 +198,7 @@
         <div>
           <label class="block text-[11px] font-semibold text-slate-500 mb-1">Grup</label>
           <select id="sGroup" onchange="toggleNewPerformanceInputs()" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
-            <option value="Başlangıç">Başlangıç</option>
-            <option value="Gelişim">Gelişim</option>
+            <option value="Temel Eğitim">Temel Eğitim</option>
             <option value="Performans">Performans</option>
             <option value="Yetişkin">Yetişkin</option>
           </select>
@@ -200,6 +251,65 @@
       </form>
     </div>
 
+    <!-- Sporcu Bilgilerini Düzenleme Kutusu -->
+    <div id="studentEditorCard" class="hidden bg-white p-5 rounded-2xl border border-sky-200 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700">SPORCU BİLGİLERİNİ DÜZENLE</span>
+          <h4 id="studentEditorTitle" class="text-base font-bold text-slate-900">Sporcu Kaydını Güncelle</h4>
+        </div>
+        <button onclick="closeStudentEditor()" class="text-xs font-semibold text-slate-500 hover:text-slate-800 px-3 py-1 rounded-lg border border-slate-200">
+          Kapat
+        </button>
+      </div>
+      <form onsubmit="saveStudentEdit(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+        <input type="hidden" id="editStudentId" />
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Yüzücü Adı Soyadı</label>
+          <input type="text" id="editSName" required
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Çocuğun Doğum Tarihi</label>
+          <input type="date" id="editSBirthDate" required
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Veli Adı Soyadı</label>
+          <input type="text" id="editSParentName" required
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Veli Telefon Numarası</label>
+          <input type="tel" id="editSParentPhone" required
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Grup</label>
+          <select id="editSGroup" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="Temel Eğitim">Temel Eğitim</option>
+            <option value="Performans">Performans</option>
+            <option value="Yetişkin">Yetişkin</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Ders Günleri & Saati</label>
+          <input type="text" id="editSSchedule" required
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div id="editCoachWrap" class="hidden">
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Hoca</label>
+          <input type="text" id="editSCoachName"
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <button type="submit" class="w-full blu-gradient text-white font-semibold text-sm py-2.5 px-4 rounded-xl shadow hover:opacity-95 transition">
+            Değişiklikleri Kaydet
+          </button>
+        </div>
+      </form>
+    </div>
+
     <!-- Performans Grubu Derece Düzenleme Kutusu -->
     <div id="perfEditorCard" class="hidden bg-white p-5 rounded-2xl border border-blue-200 shadow-sm">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
@@ -246,14 +356,14 @@
           <h3 class="text-base font-bold text-slate-900">Yüzücü Listesi, Yoklama Kaydı & Ders Hakları</h3>
           <p class="text-xs text-slate-500 mt-0.5">Tarihli katılım/devamsızlık geçmişi ve veli kartını görmek için yüzücü adına tıklayın.</p>
         </div>
-        <input type="text" id="searchInput" oninput="renderStudents()" placeholder="İsim, veli, telefon veya grup ara..."
+        <input type="text" id="searchInput" oninput="renderStudents()" placeholder="İsim, hoca, veli veya grup ara..."
           class="px-3.5 py-1.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-sky-50/70 text-xs font-semibold text-slate-600 uppercase">
-              <th class="py-3 px-4">Yüzücü & Doğum Tarihi</th>
+              <th class="py-3 px-4">Yüzücü, Hoca & Doğum</th>
               <th class="py-3 px-4">Veli Ad Soyad, Tel & Şifre</th>
               <th class="py-3 px-4">Grup & Program</th>
               <th class="py-3 px-4">Kalan Ders</th>
@@ -281,18 +391,20 @@
       projectId: "blu-academy-9b31a",
       storageBucket: "blu-academy-9b31a.firebasestorage.app",
       messagingSenderId: "264057953862",
-      appId: "1:264057953862:web:fed627f1f5826b7937b447"
+      appId: "1:264057953862:web:fed627f1f5826b7937b447"
     };
 
     // Kendi belirleyeceğin yönetici şifresini aşağıdaki tırnak içine yaz:
     const ADMIN_PASSWORDS = ["12345"];
+    const ADMIN_COACH_LABEL = "Yönetici";
     const DEFAULT_LESSONS = 8;
     const SESSION_KEY = "blu_academy_session_v1";
 
     let db = null;
     let useCloud = false;
     let students = [];
-    let activeSession = null; // { role: 'admin', inspectedStudentId?: string } | { role: 'parent', parentName: string, parentPassword: string }
+    let coaches = [];
+    let activeSession = null;
 
     const statusBadge = document.getElementById("cloudStatus");
 
@@ -310,26 +422,43 @@
       statusBadge.textContent = "🟡 Yerel Mod (Config Bekleniyor)";
       statusBadge.className = "text-xs font-semibold px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200";
       students = JSON.parse(localStorage.getItem("blu_students_v2") || "[]");
+      coaches = JSON.parse(localStorage.getItem("blu_coaches_v1") || "[]");
     }
 
-    function generateParentPassword() {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      let code = "BLU-";
-      for (let i = 0; i < 5; i++) {
-        code += chars[Math.floor(Math.random() * chars.length)];
+    function sanitizeFiveDigitPin(rawVal = "") {
+      const digitsOnly = String(rawVal).replace(/\D/g, "").slice(0, 5);
+      return digitsOnly || generateFiveDigitPin();
+    }
+
+    function generateFiveDigitPin() {
+      return String(Math.floor(10000 + Math.random() * 90000));
+    }
+
+    function normalizeGroup(groupVal = "") {
+      if (groupVal === "Başlangıç" || groupVal === "Gelişim" || groupVal === "Temel Eğitim") {
+        return "Temel Eğitim";
       }
-      return code;
+      if (groupVal === "Performans") return "Performans";
+      if (groupVal === "Yetişkin") return "Yetişkin";
+      return "Temel Eğitim";
     }
 
     function normalizeStudent(docId, data) {
       const pInfo = getParentDetails(data);
-      const parentPassword = (typeof data.parentPassword === "string" && data.parentPassword.trim())
-        ? data.parentPassword.trim()
-        : generateParentPassword();
+      const rawPin = data.parentPassword;
+      const parentPassword = (typeof rawPin === "string" || typeof rawPin === "number") && String(rawPin).replace(/\D/g, "").length > 0
+        ? String(rawPin).replace(/\D/g, "").slice(0, 5)
+        : generateFiveDigitPin();
 
       const perf = data.performanceTimes && typeof data.performanceTimes === "object"
         ? data.performanceTimes
         : {};
+
+      const coachName = (typeof data.coachName === "string" && data.coachName.trim())
+        ? data.coachName.trim()
+        : ADMIN_COACH_LABEL;
+
+      const ownerRole = data.ownerRole === "coach" ? "coach" : "admin";
 
       return {
         id: docId,
@@ -340,13 +469,20 @@
         parentPhone: pInfo.parentPhone,
         parent: data.parent || `${pInfo.parentName} • ${pInfo.parentPhone}`,
         parentPassword,
+        coachName,
+        ownerRole,
+        group: normalizeGroup(data.group),
         performanceTimes: {
           free: perf.free || "",
           back: perf.back || "",
           breast: perf.breast || "",
           fly: perf.fly || ""
         },
-        ...data
+        ...data,
+        group: normalizeGroup(data.group),
+        coachName,
+        ownerRole,
+        parentPassword
       };
     }
 
@@ -358,11 +494,46 @@
         console.error(err);
         statusBadge.textContent = "🔴 Bulut Kural Hatası";
       });
+
+      db.collection("coaches").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+        coaches = snapshot.docs.map(doc => {
+          const d = doc.data();
+          return {
+            id: doc.id,
+            name: (d.name || "").trim(),
+            password: sanitizeFiveDigitPin(d.password),
+            createdAt: d.createdAt || 0
+          };
+        });
+        renderCoachList();
+      }, (err) => {
+        console.error(err);
+      });
     }
 
     function saveLocal() {
       localStorage.setItem("blu_students_v2", JSON.stringify(students));
+      localStorage.setItem("blu_coaches_v1", JSON.stringify(coaches));
       refreshActiveView();
+    }
+
+    function isAdminSession() {
+      return activeSession && activeSession.role === "admin";
+    }
+
+    function isCoachSession() {
+      return activeSession && activeSession.role === "coach";
+    }
+
+    function getVisibleStudents() {
+      if (isAdminSession()) {
+        return students.filter(s => s.ownerRole !== "coach");
+      }
+      if (isCoachSession()) {
+        const cName = (activeSession.coachName || "").trim().toLowerCase();
+        return students.filter(s => s.ownerRole === "coach" && (s.coachName || "").trim().toLowerCase() === cName);
+      }
+      return [];
     }
 
     function persistSession(sessionObj) {
@@ -379,7 +550,7 @@
         const raw = localStorage.getItem(SESSION_KEY);
         if (!raw) return;
         const parsed = JSON.parse(raw);
-        if (parsed && (parsed.role === "admin" || parsed.role === "parent")) {
+        if (parsed && (parsed.role === "admin" || parsed.role === "coach" || parsed.role === "parent")) {
           activeSession = parsed;
           refreshActiveView();
         }
@@ -394,11 +565,19 @@
         return;
       }
 
-      if (activeSession.role === "admin") {
+      if (isAdminSession()) {
         if (activeSession.inspectedStudentId) {
           renderStudentInspection(activeSession.inspectedStudentId);
         } else {
-          showAdminPanel();
+          showStaffPanel("admin");
+          renderCoachList();
+          renderStudents();
+        }
+      } else if (isCoachSession()) {
+        if (activeSession.inspectedStudentId) {
+          renderStudentInspection(activeSession.inspectedStudentId);
+        } else {
+          showStaffPanel("coach");
           renderStudents();
         }
       } else if (activeSession.role === "parent") {
@@ -456,15 +635,16 @@
     }
 
     function switchLoginTab(tab) {
-      const isAdmin = tab === "admin";
-      document.getElementById("adminForm").classList.toggle("hidden", !isAdmin);
-      document.getElementById("parentForm").classList.toggle("hidden", isAdmin);
-      document.getElementById("tabAdmin").className = isAdmin
-        ? "py-2 text-sm font-semibold rounded-lg bg-white text-blue-700 shadow-sm transition"
-        : "py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-blue-700 transition";
-      document.getElementById("tabParent").className = !isAdmin
-        ? "py-2 text-sm font-semibold rounded-lg bg-white text-blue-700 shadow-sm transition"
-        : "py-2 text-sm font-semibold rounded-lg text-slate-600 hover:text-blue-700 transition";
+      document.getElementById("adminForm").classList.toggle("hidden", tab !== "admin");
+      document.getElementById("coachForm").classList.toggle("hidden", tab !== "coach");
+      document.getElementById("parentForm").classList.toggle("hidden", tab !== "parent");
+
+      const activeCls = "py-2 text-xs sm:text-sm font-semibold rounded-lg bg-white text-blue-700 shadow-sm transition";
+      const idleCls = "py-2 text-xs sm:text-sm font-semibold rounded-lg text-slate-600 hover:text-blue-700 transition";
+
+      document.getElementById("tabAdmin").className = tab === "admin" ? activeCls : idleCls;
+      document.getElementById("tabCoach").className = tab === "coach" ? activeCls : idleCls;
+      document.getElementById("tabParent").className = tab === "parent" ? activeCls : idleCls;
       document.getElementById("loginError").classList.add("hidden");
     }
 
@@ -477,13 +657,23 @@
       document.getElementById("headerSubtitle").textContent = "Yüzme Okulu Yönetim & Veli Takip Portalı";
     }
 
-    function showAdminPanel() {
+    function showStaffPanel(role) {
       document.getElementById("loginSection").classList.add("hidden");
       document.getElementById("parentSection").classList.add("hidden");
       document.getElementById("adminSection").classList.remove("hidden");
       document.getElementById("backToAdminBtn").classList.add("hidden");
       document.getElementById("logoutBtn").classList.remove("hidden");
-      document.getElementById("headerSubtitle").textContent = "Yönetici Yönetim Paneli";
+
+      const isAdmin = role === "admin";
+      document.getElementById("coachManagementSection").classList.toggle("hidden", !isAdmin);
+      document.getElementById("editCoachWrap").classList.toggle("hidden", !isAdmin);
+      if (!isAdmin) {
+        closeStudentEditor();
+        closePerfEditor();
+      }
+      document.getElementById("headerSubtitle").textContent = isAdmin
+        ? "Yönetici Yönetim Paneli"
+        : `Antrenör Paneli (${activeSession.coachName})`;
     }
 
     function showParentScreenOnly(matches) {
@@ -496,17 +686,18 @@
       renderParentCards(matches);
     }
 
-    function openStudentDetailAsAdmin(studentId) {
-      persistSession({ role: "admin", inspectedStudentId: studentId });
+    function openStudentDetailAsStaff(studentId) {
+      if (!activeSession || (!isAdminSession() && !isCoachSession())) return;
+      persistSession({ ...activeSession, inspectedStudentId: studentId });
       renderStudentInspection(studentId);
     }
 
     function renderStudentInspection(studentId) {
-      const target = students.find(s => s.id === studentId);
+      const pool = getVisibleStudents();
+      const target = pool.find(s => s.id === studentId);
       if (!target) {
-        persistSession({ role: "admin" });
-        showAdminPanel();
-        renderStudents();
+        persistSession({ ...activeSession, inspectedStudentId: null });
+        refreshActiveView();
         return;
       }
       document.getElementById("loginSection").classList.add("hidden");
@@ -519,33 +710,50 @@
     }
 
     function backToAdminPanel() {
-      persistSession({ role: "admin" });
-      showAdminPanel();
-      renderStudents();
+      if (!activeSession) return;
+      persistSession({ ...activeSession, inspectedStudentId: null });
+      refreshActiveView();
     }
 
     function handleAdminLogin(e) {
       e.preventDefault();
       const pass = document.getElementById("adminPass").value.trim();
       if (ADMIN_PASSWORDS.includes(pass)) {
-        persistSession({ role: "admin" });
-        showAdminPanel();
+        persistSession({ role: "admin", inspectedStudentId: null });
+        showStaffPanel("admin");
+        renderCoachList();
         renderStudents();
       } else {
         showError("Hatalı yönetici şifresi.");
       }
     }
 
+    function handleCoachLogin(e) {
+      e.preventDefault();
+      const nameInput = document.getElementById("coachLoginName").value.trim().toLowerCase();
+      const passInput = document.getElementById("coachLoginPass").value.trim().replace(/\D/g, "").slice(0, 5);
+      const found = coaches.find(c =>
+        c.name.toLowerCase() === nameInput && String(c.password) === passInput
+      );
+      if (!found) {
+        showError("Antrenör adı veya 5 haneli şifresi hatalı.");
+        return;
+      }
+      persistSession({ role: "coach", coachName: found.name, inspectedStudentId: null });
+      showStaffPanel("coach");
+      renderStudents();
+    }
+
     function findParentMatchesByNameAndPass(nameQuery, passQuery) {
       const nq = (nameQuery || "").trim().toLowerCase();
-      const pq = (passQuery || "").trim();
+      const pq = (passQuery || "").trim().replace(/\D/g, "").slice(0, 5);
       if (!nq || !pq) return [];
       return students.filter(s => {
         const pInfo = getParentDetails(s);
         const nameMatch =
           pInfo.parentName.toLowerCase().includes(nq) ||
           (s.parent && s.parent.toLowerCase().includes(nq));
-        const passMatch = (s.parentPassword || "").trim() === pq;
+        const passMatch = String(s.parentPassword || "").replace(/\D/g, "").slice(0, 5) === pq;
         return nameMatch && passMatch;
       });
     }
@@ -553,14 +761,70 @@
     function handleParentLogin(e) {
       e.preventDefault();
       const pName = document.getElementById("parentNameInput").value.trim();
-      const pPass = document.getElementById("parentPassInput").value.trim();
+      const pPass = document.getElementById("parentPassInput").value.trim().replace(/\D/g, "").slice(0, 5);
       const matches = findParentMatchesByNameAndPass(pName, pPass);
       if (matches.length === 0) {
-        showError("Veli adı soyadı veya şifre hatalı. Lütfen kontrol edin.");
+        showError("Veli adı soyadı veya 5 haneli şifre hatalı. Lütfen kontrol edin.");
         return;
       }
       persistSession({ role: "parent", parentName: pName, parentPassword: pPass });
       showParentScreenOnly(matches);
+    }
+
+    async function addCoach(e) {
+      e.preventDefault();
+      if (!isAdminSession()) return;
+      const name = document.getElementById("cName").value.trim();
+      const rawPass = document.getElementById("cPass").value.trim();
+      const digits = rawPass.replace(/\D/g, "");
+      if (!digits || digits.length > 5 || digits !== rawPass) {
+        alert("Antrenör şifresi yalnızca rakamlardan oluşmalı ve en fazla 5 haneli olmalıdır.");
+        return;
+      }
+
+      const newCoach = {
+        name,
+        password: digits,
+        createdAt: Date.now()
+      };
+
+      if (useCloud && db) {
+        await db.collection("coaches").add(newCoach);
+      } else {
+        newCoach.id = String(Date.now());
+        coaches.unshift(newCoach);
+        saveLocal();
+      }
+      e.target.reset();
+      renderCoachList();
+    }
+
+    async function deleteCoach(coachId) {
+      if (!isAdminSession()) return;
+      if (!confirm("Bu antrenör kaydını silmek istediğinize emin misiniz?")) return;
+      if (useCloud && db) {
+        await db.collection("coaches").doc(coachId).delete();
+      } else {
+        coaches = coaches.filter(c => c.id !== coachId);
+        saveLocal();
+      }
+      renderCoachList();
+    }
+
+    function renderCoachList() {
+      const container = document.getElementById("coachListContainer");
+      if (!container) return;
+      if (coaches.length === 0) {
+        container.innerHTML = `<span class="text-xs text-slate-400">Henüz kayıtlı antrenör bulunmuyor.</span>`;
+        return;
+      }
+      container.innerHTML = coaches.map(c => `
+        <div class="inline-flex items-center gap-2 bg-sky-50 border border-sky-200 rounded-xl px-3 py-1.5 text-xs">
+          <span class="font-bold text-blue-900">${c.name}</span>
+          <span class="font-mono font-semibold text-slate-600">Şifre: ${c.password}</span>
+          <button onclick="deleteCoach('${c.id}')" class="text-rose-600 hover:text-rose-800 font-bold ml-1">×</button>
+        </div>
+      `).join("");
     }
 
     function renderPerformanceSection(student) {
@@ -597,6 +861,7 @@
         const lowLessonsWarning = lessons <= 2;
         const pInfo = getParentDetails(s);
         const birthFormatted = formatBirthDate(s.birthDate);
+        const coachLabel = s.coachName || ADMIN_COACH_LABEL;
 
         const historyHtml = history.length === 0
           ? `<div class="text-xs text-slate-400 py-4 text-center">Henüz tarihli yoklama kaydı bulunmuyor.</div>`
@@ -627,6 +892,9 @@
                   <div class="flex flex-wrap items-center gap-2 mb-1.5">
                     <span class="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/20">
                       ${s.group}
+                    </span>
+                    <span class="inline-block text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-white/15 text-sky-50">
+                      🏅 Hoca: ${coachLabel}
                     </span>
                     <span class="inline-block text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-white/15 text-sky-50">
                       🎂 Doğum Tarihi: ${birthFormatted}
@@ -707,16 +975,21 @@
     function logout() {
       persistSession(null);
       closePerfEditor();
+      closeStudentEditor();
       showLoginScreen();
     }
 
     async function addStudent(e) {
       e.preventDefault();
+      if (!activeSession || (!isAdminSession() && !isCoachSession())) return;
+
       const lessonInput = parseInt(document.getElementById("sLessons").value, 10);
       const remainingLessons = Number.isNaN(lessonInput) ? DEFAULT_LESSONS : Math.max(0, lessonInput);
       const parentName = document.getElementById("sParentName").value.trim();
       const parentPhone = document.getElementById("sParentPhone").value.trim();
-      const group = document.getElementById("sGroup").value;
+      const group = normalizeGroup(document.getElementById("sGroup").value);
+      const ownerRole = isCoachSession() ? "coach" : "admin";
+      const coachName = isCoachSession() ? activeSession.coachName : ADMIN_COACH_LABEL;
 
       const performanceTimes = group === "Performans"
         ? {
@@ -733,7 +1006,9 @@
         parentName,
         parentPhone,
         parent: `${parentName} • ${parentPhone}`,
-        parentPassword: generateParentPassword(),
+        parentPassword: generateFiveDigitPin(),
+        ownerRole,
+        coachName,
         group,
         schedule: document.getElementById("sSchedule").value.trim(),
         remainingLessons,
@@ -755,7 +1030,74 @@
       toggleNewPerformanceInputs();
     }
 
+    function openStudentEditor(studentId) {
+      if (!isAdminSession()) return;
+      const s = students.find(x => x.id === studentId);
+      if (!s) return;
+      const pInfo = getParentDetails(s);
+
+      document.getElementById("editStudentId").value = s.id;
+      document.getElementById("studentEditorTitle").textContent = `${s.name} — Kayıt Bilgilerini Düzenle`;
+      document.getElementById("editSName").value = s.name || "";
+      document.getElementById("editSBirthDate").value = s.birthDate || "";
+      document.getElementById("editSParentName").value = pInfo.parentName === "Belirtilmedi" ? "" : pInfo.parentName;
+      document.getElementById("editSParentPhone").value = pInfo.parentPhone === "Belirtilmedi" ? "" : pInfo.parentPhone;
+      document.getElementById("editSGroup").value = normalizeGroup(s.group);
+      document.getElementById("editSSchedule").value = s.schedule || "";
+      document.getElementById("editSCoachName").value = s.coachName || ADMIN_COACH_LABEL;
+
+      document.getElementById("studentEditorCard").classList.remove("hidden");
+      document.getElementById("studentEditorCard").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function closeStudentEditor() {
+      document.getElementById("studentEditorCard").classList.add("hidden");
+      document.getElementById("editStudentId").value = "";
+    }
+
+    async function saveStudentEdit(e) {
+      e.preventDefault();
+      if (!isAdminSession()) return;
+      const id = document.getElementById("editStudentId").value;
+      const s = students.find(x => x.id === id);
+      if (!s) return;
+
+      const name = document.getElementById("editSName").value.trim();
+      const birthDate = document.getElementById("editSBirthDate").value;
+      const parentName = document.getElementById("editSParentName").value.trim();
+      const parentPhone = document.getElementById("editSParentPhone").value.trim();
+      const group = normalizeGroup(document.getElementById("editSGroup").value);
+      const schedule = document.getElementById("editSSchedule").value.trim();
+      const coachName = document.getElementById("editSCoachName").value.trim() || ADMIN_COACH_LABEL;
+      const parent = `${parentName} • ${parentPhone}`;
+
+      if (useCloud && db) {
+        await db.collection("students").doc(id).update({
+          name,
+          birthDate,
+          parentName,
+          parentPhone,
+          parent,
+          group,
+          schedule,
+          coachName
+        });
+      } else {
+        s.name = name;
+        s.birthDate = birthDate;
+        s.parentName = parentName;
+        s.parentPhone = parentPhone;
+        s.parent = parent;
+        s.group = group;
+        s.schedule = schedule;
+        s.coachName = coachName;
+        saveLocal();
+      }
+      closeStudentEditor();
+    }
+
     function openPerfEditor(studentId) {
+      if (!isAdminSession()) return;
       const s = students.find(x => x.id === studentId);
       if (!s) return;
       const perf = s.performanceTimes || {};
@@ -776,6 +1118,7 @@
 
     async function savePerfTimes(e) {
       e.preventDefault();
+      if (!isAdminSession()) return;
       const id = document.getElementById("perfStudentId").value;
       const s = students.find(x => x.id === id);
       if (!s) return;
@@ -797,6 +1140,7 @@
     }
 
     async function recordAttendance(id, status) {
+      if (!activeSession || (!isAdminSession() && !isCoachSession())) return;
       const s = students.find(x => x.id === id);
       if (!s) return;
 
@@ -820,6 +1164,7 @@
     }
 
     async function adjustLessons(id, delta) {
+      if (!isAdminSession()) return;
       const s = students.find(x => x.id === id);
       if (!s) return;
       const currentLessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
@@ -834,6 +1179,7 @@
     }
 
     async function togglePayment(id, currentPaid) {
+      if (!isAdminSession()) return;
       if (useCloud && db) {
         await db.collection("students").doc(id).update({ paid: !currentPaid });
       } else {
@@ -844,6 +1190,7 @@
     }
 
     async function deleteStudent(id) {
+      if (!isAdminSession()) return;
       if (!confirm("Bu öğrenci kaydını silmek istediğinize emin misiniz?")) return;
       if (useCloud && db) {
         await db.collection("students").doc(id).delete();
@@ -854,25 +1201,28 @@
     }
 
     function renderStudents() {
+      const pool = getVisibleStudents();
       const filter = (document.getElementById("searchInput")?.value || "").toLowerCase();
-      const filtered = students.filter(s => {
+      const filtered = pool.filter(s => {
         const pInfo = getParentDetails(s);
         return (
           (s.name || "").toLowerCase().includes(filter) ||
+          (s.coachName || "").toLowerCase().includes(filter) ||
           (s.group || "").toLowerCase().includes(filter) ||
           (s.parent || "").toLowerCase().includes(filter) ||
           pInfo.parentName.toLowerCase().includes(filter) ||
           pInfo.parentPhone.toLowerCase().includes(filter) ||
-          (s.parentPassword || "").toLowerCase().includes(filter)
+          String(s.parentPassword || "").toLowerCase().includes(filter)
         );
       });
 
-      const totalLessons = students.reduce((sum, s) => sum + (typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS), 0);
-      document.getElementById("statTotal").textContent = students.length;
+      const totalLessons = pool.reduce((sum, s) => sum + (typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS), 0);
+      document.getElementById("statTotal").textContent = pool.length;
       document.getElementById("statLessons").textContent = totalLessons;
-      document.getElementById("statPaid").textContent = students.filter(s => s.paid).length;
-      document.getElementById("statUnpaid").textContent = students.filter(s => !s.paid).length;
+      document.getElementById("statPaid").textContent = pool.filter(s => s.paid).length;
+      document.getElementById("statUnpaid").textContent = pool.filter(s => !s.paid).length;
 
+      const canManageAdmin = isAdminSession();
       const tbody = document.getElementById("studentTableBody");
       if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">Henüz kayıtlı yüzücü bulunmuyor.</td></tr>`;
@@ -885,6 +1235,7 @@
         const birthFormatted = formatBirthDate(s.birthDate);
         const historyCount = Array.isArray(s.attendanceHistory) ? s.attendanceHistory.length : 0;
         const perf = s.performanceTimes || {};
+        const coachLabel = s.coachName || ADMIN_COACH_LABEL;
         const payClass = s.paid
           ? "bg-emerald-100 text-emerald-700 border-emerald-200"
           : "bg-amber-100 text-amber-700 border-amber-200";
@@ -894,18 +1245,58 @@
             <div class="mt-1.5 text-[11px] text-slate-600 bg-sky-50 border border-sky-100 rounded-lg px-2.5 py-1.5 space-y-0.5">
               <div><strong class="text-blue-800">Serbest:</strong> ${perf.free || '-'} • <strong class="text-blue-800">Sırt:</strong> ${perf.back || '-'}</div>
               <div><strong class="text-blue-800">Kurbağa:</strong> ${perf.breast || '-'} • <strong class="text-blue-800">Kelebek:</strong> ${perf.fly || '-'}</div>
-              <button onclick="openPerfEditor('${s.id}')" class="text-[11px] font-bold text-blue-700 hover:underline pt-0.5">
-                Dereceleri Düzenle
-              </button>
+              ${canManageAdmin ? `
+                <button onclick="openPerfEditor('${s.id}')" class="text-[11px] font-bold text-blue-700 hover:underline pt-0.5">
+                  Dereceleri Düzenle
+                </button>
+              ` : ""}
             </div>
           `
           : "";
 
+        const lessonCellHtml = canManageAdmin
+          ? `
+            <div class="inline-flex items-center gap-1.5 bg-slate-100 rounded-lg px-2 py-1">
+              <button onclick="adjustLessons('${s.id}', -1)" class="w-5 h-5 rounded bg-white text-slate-700 font-bold text-xs shadow-sm">-</button>
+              <span class="text-xs font-extrabold text-blue-800 min-w-[48px] text-center">${lessons} Ders</span>
+              <button onclick="adjustLessons('${s.id}', 1)" class="w-5 h-5 rounded bg-white text-slate-700 font-bold text-xs shadow-sm">+</button>
+            </div>
+          `
+          : `<span class="text-xs font-extrabold text-blue-800">${lessons} Ders</span>`;
+
+        const paymentCellHtml = canManageAdmin
+          ? `
+            <button onclick="togglePayment('${s.id}', ${Boolean(s.paid)})"
+              class="px-3 py-1 rounded-full text-xs font-semibold border ${payClass} transition">
+              ${s.paid ? 'Ödendi' : 'Ödeme Bekliyor'}
+            </button>
+          `
+          : `
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold border ${payClass}">
+              ${s.paid ? 'Ödendi' : 'Ödeme Bekliyor'}
+            </span>
+          `;
+
+        const actionCellHtml = canManageAdmin
+          ? `
+            <div class="flex items-center justify-end gap-2.5">
+              <button onclick="openStudentEditor('${s.id}')" class="text-xs text-blue-700 hover:text-blue-900 font-semibold">
+                Düzenle
+              </button>
+              <button onclick="deleteStudent('${s.id}')" class="text-xs text-red-500 hover:text-red-700 font-medium">
+                Sil
+              </button>
+            </div>
+          `
+          : `<span class="text-[11px] text-slate-400">Yönetici yetkisi</span>`;
+
         return `
           <tr class="hover:bg-sky-50/40 transition">
             <td class="py-3 px-4">
-              <button onclick="openStudentDetailAsAdmin('${s.id}')" class="text-left group">
-                <div class="font-bold text-blue-800 group-hover:underline">${s.name}</div>
+              <button onclick="openStudentDetailAsStaff('${s.id}')" class="text-left group">
+                <div class="font-bold text-blue-800 group-hover:underline">
+                  ${s.name} <span class="text-xs font-semibold text-slate-600">• Hoca: ${coachLabel}</span>
+                </div>
                 <div class="text-[11px] text-slate-400">${historyCount} yoklama kaydı • Kartı Aç</div>
               </button>
               <div class="text-xs text-slate-500 mt-0.5">Doğum: ${birthFormatted}</div>
@@ -921,11 +1312,7 @@
               ${perfSummaryHtml}
             </td>
             <td class="py-3 px-4">
-              <div class="inline-flex items-center gap-1.5 bg-slate-100 rounded-lg px-2 py-1">
-                <button onclick="adjustLessons('${s.id}', -1)" class="w-5 h-5 rounded bg-white text-slate-700 font-bold text-xs shadow-sm">-</button>
-                <span class="text-xs font-extrabold text-blue-800 min-w-[48px] text-center">${lessons} Ders</span>
-                <button onclick="adjustLessons('${s.id}', 1)" class="w-5 h-5 rounded bg-white text-slate-700 font-bold text-xs shadow-sm">+</button>
-              </div>
+              ${lessonCellHtml}
             </td>
             <td class="py-3 px-4">
               <div class="flex flex-wrap gap-1.5">
@@ -940,15 +1327,10 @@
               </div>
             </td>
             <td class="py-3 px-4">
-              <button onclick="togglePayment('${s.id}', ${Boolean(s.paid)})"
-                class="px-3 py-1 rounded-full text-xs font-semibold border ${payClass} transition">
-                ${s.paid ? 'Ödendi' : 'Ödeme Bekliyor'}
-              </button>
+              ${paymentCellHtml}
             </td>
             <td class="py-3 px-4 text-right">
-              <button onclick="deleteStudent('${s.id}')" class="text-xs text-red-500 hover:text-red-700 font-medium">
-                Sil
-              </button>
+              ${actionCellHtml}
             </td>
           </tr>
         `;
