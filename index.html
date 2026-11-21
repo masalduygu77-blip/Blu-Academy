@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blu Academy — Yüzme Okulu Yönetim Sistemi</title>
+  <title>Blu Academy — Yüzme Okulu Yönetim & Veli Takip Portalı</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Firebase Compat SDK (Tüm tarayıcılarla tam uyumlu) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <style>
@@ -17,23 +16,23 @@
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
   <!-- Üst Bilgi Çubuğu -->
-  <header class="blu-gradient text-white shadow-md">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
+  <header class="bg-white border-b border-sky-100 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center font-extrabold text-xl tracking-tight">
-          BA
+        <div class="w-10 h-10 rounded-xl blu-gradient text-white flex items-center justify-center font-extrabold text-lg shadow-sm">
+          🌊
         </div>
         <div>
-          <h1 class="text-xl font-bold tracking-tight">Blu Academy</h1>
-          <p class="text-xs text-sky-100">Yüzme Okulu Yönetim & Veli Takip Portalı</p>
+          <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-blue-950">BLU ACADEMY</h1>
+          <p id="headerSubtitle" class="text-xs text-slate-500">Yüzme Okulu Yönetim & Veli Takip Portalı</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <span id="cloudStatus" class="text-xs font-medium px-3 py-1.5 rounded-full bg-white/15 border border-white/25">
+      <div class="flex items-center gap-2.5">
+        <span id="cloudStatus" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
           Bulut Bağlanıyor...
         </span>
-        <button id="logoutBtn" onclick="logout()" class="hidden text-xs font-semibold bg-white text-blue-700 hover:bg-sky-50 px-3.5 py-1.5 rounded-lg transition">
+        <button id="logoutBtn" onclick="logout()" class="hidden text-xs font-semibold bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-lg transition">
           Çıkış Yap
         </button>
       </div>
@@ -51,7 +50,6 @@
         <p class="text-sm text-slate-500 mt-1">Devam etmek için giriş türünü seçin</p>
       </div>
 
-      <!-- Sekmeler -->
       <div class="grid grid-cols-2 gap-2 p-1 bg-sky-50 rounded-xl mb-6">
         <button id="tabAdmin" onclick="switchLoginTab('admin')" class="py-2 text-sm font-semibold rounded-lg bg-white text-blue-700 shadow-sm transition">
           Yönetici Girişi
@@ -61,11 +59,10 @@
         </button>
       </div>
 
-      <!-- Yönetici Formu -->
       <form id="adminForm" onsubmit="handleAdminLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Yönetici Şifresi</label>
-          <input type="password" id="adminPass" placeholder="Varsayılan: blu2026" required
+          <input type="password" id="adminPass" placeholder="Yönetici şifresini girin" required
             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
         </div>
         <button type="submit" class="w-full blu-gradient text-white font-semibold py-2.5 rounded-xl shadow hover:opacity-95 transition">
@@ -73,11 +70,10 @@
         </button>
       </form>
 
-      <!-- Veli Formu -->
       <form id="parentForm" onsubmit="handleParentLogin(event)" class="space-y-4 hidden">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Veli Telefon Numarası veya Öğrenci Kodu</label>
-          <input type="text" id="parentQuery" placeholder="Örn: 05551234567 veya Yüzücü Adı" required
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Öğrenci Adı veya Veli Bilgisi</label>
+          <input type="text" id="parentQuery" placeholder="Örn: Duru Harputluoğlu veya telefon" required
             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
         </div>
         <button type="submit" class="w-full blu-gradient text-white font-semibold py-2.5 rounded-xl shadow hover:opacity-95 transition">
@@ -98,12 +94,12 @@
         <p id="statTotal" class="text-2xl font-extrabold text-blue-700 mt-1">0</p>
       </div>
       <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-sm">
-        <p class="text-xs text-slate-500 font-medium">Bugün Katılan</p>
-        <p id="statPresent" class="text-2xl font-extrabold text-emerald-600 mt-1">0</p>
+        <p class="text-xs text-slate-500 font-medium">Toplam Kalan Ders</p>
+        <p id="statLessons" class="text-2xl font-extrabold text-sky-600 mt-1">0</p>
       </div>
       <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-sm">
         <p class="text-xs text-slate-500 font-medium">Ödemesi Tamam</p>
-        <p id="statPaid" class="text-2xl font-extrabold text-sky-600 mt-1">0</p>
+        <p id="statPaid" class="text-2xl font-extrabold text-emerald-600 mt-1">0</p>
       </div>
       <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-sm">
         <p class="text-xs text-slate-500 font-medium">Ödeme Bekleyen</p>
@@ -111,21 +107,23 @@
       </div>
     </div>
 
-    <!-- Yeni Yüzücü Ekleme Formu -->
+    <!-- Yeni Yüzücü Ekleme Formu (Varsayılan 8 Ders) -->
     <div class="bg-white p-5 rounded-2xl border border-sky-100 shadow-sm">
-      <h3 class="text-base font-bold text-slate-900 mb-4">Yeni Yüzücü Kaydı Ekle</h3>
-      <form onsubmit="addStudent(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <h3 class="text-base font-bold text-slate-900 mb-4">Yeni Yüzücü Kaydı Ekle (8 Ders Paket)</h3>
+      <form onsubmit="addStudent(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
         <input type="text" id="sName" placeholder="Yüzücü Adı Soyadı" required
           class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
         <input type="text" id="sParent" placeholder="Veli Adı & Telefon" required
           class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
         <select id="sGroup" class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
-          <option value="Başlangıç Grubu">Başlangıç Grubu</option>
-          <option value="Gelişim Grubu">Gelişim Grubu</option>
-          <option value="Performans Takımı">Performans Takımı</option>
-          <option value="Yetişkin Grubu">Yetişkin Grubu</option>
+          <option value="Başlangıç">Başlangıç</option>
+          <option value="Gelişim">Gelişim</option>
+          <option value="Performans">Performans</option>
+          <option value="Yetişkin">Yetişkin</option>
         </select>
-        <input type="text" id="sSchedule" placeholder="Gün / Saat (Örn: Cmt-Paz 11:00)" required
+        <input type="text" id="sSchedule" placeholder="Gün / Saat (Örn: Çarşamba - Cuma • 16:00)" required
+          class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        <input type="number" id="sLessons" value="8" min="0" max="100" required
           class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
         <button type="submit" class="blu-gradient text-white font-semibold text-sm py-2 px-4 rounded-xl shadow hover:opacity-95 transition">
           + Kaydet
@@ -133,22 +131,22 @@
       </form>
     </div>
 
-    <!-- Yüzücü Listesi, Yoklama ve Ödeme Takibi -->
+    <!-- Yüzücü Listesi, Yoklama Geçmişi & Ders Hakkı -->
     <div class="bg-white rounded-2xl border border-sky-100 shadow-sm overflow-hidden">
       <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
-        <h3 class="text-base font-bold text-slate-900">Yüzücü Listesi, Anlık Yoklama & Aidat Durumu</h3>
-        <input type="text" id="searchInput" oninput="renderStudents()" placeholder="İsim veya grup ara..."
+        <h3 class="text-base font-bold text-slate-900">Yüzücü Listesi, Yoklama Kaydı & Ders Hakları</h3>
+        <input type="text" id="searchInput" oninput="renderStudents()" placeholder="İsim, grup veya veli ara..."
           class="px-3.5 py-1.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-sky-50/70 text-xs font-semibold text-slate-600 uppercase">
-              <th class="py-3 px-4">Yüzücü</th>
-              <th class="py-3 px-4">Grup & Seans</th>
-              <th class="py-3 px-4">Veli İletişim</th>
-              <th class="py-3 px-4">Yoklama Durumu</th>
-              <th class="py-3 px-4">Aidat / Ödeme</th>
+              <th class="py-3 px-4">Yüzücü & Veli</th>
+              <th class="py-3 px-4">Grup & Program</th>
+              <th class="py-3 px-4">Kalan Ders</th>
+              <th class="py-3 px-4">Tarihli Yoklama Ekle</th>
+              <th class="py-3 px-4">Aidat</th>
               <th class="py-3 px-4 text-right">İşlem</th>
             </tr>
           </thead>
@@ -158,30 +156,30 @@
     </div>
   </section>
 
-  <!-- VELİ EKRANI -->
-  <section id="parentSection" class="hidden flex-1 max-w-3xl w-full mx-auto px-4 py-8 space-y-4">
-    <div class="bg-white p-6 rounded-2xl border border-sky-100 shadow-sm">
-      <h3 class="text-lg font-bold text-slate-900 mb-1">Veli Bilgilendirme Ekranı</h3>
-      <p class="text-xs text-slate-500 mb-5">Çocuğunuzun güncel antrenman programı, yoklama durumu ve aidat bilgisi aşağıdadır.</p>
-      <div id="parentResults" class="space-y-4"></div>
-    </div>
+  <!-- VELİ BİLGİLENDİRME EKRANI -->
+  <section id="parentSection" class="hidden flex-1 max-w-5xl w-full mx-auto px-4 py-6 space-y-5">
+    <div id="parentResults" class="space-y-6"></div>
   </section>
 
   <script>
     // 1. FIREBASE YAPILANDIRMASI (blu-academy-9b31a)
-    // Firebase Console > Project Settings > General > Your apps kısmından aldığın değerleri buraya gir:
     const firebaseConfig = {
-      apiKey: "AIzaSyCqgJY_NVxt7NBEM6x_yWVUrcWwToh_UZA",
+      apiKey: AIzaSyCqgJY_NVxt7NBEM6x_yWVUrcWwToh_UZA,
       authDomain: "blu-academy-9b31a.firebaseapp.com",
       projectId: "blu-academy-9b31a",
       storageBucket: "blu-academy-9b31a.firebasestorage.app",
-      messagingSenderId: "264057953862",
-      appId: "1:264057953862:web:fed627f1f5826b7937b447",
+      messagingSenderId: "264057953862",
+      appId: "1:264057953862:web:fed627f1f5826b7937b447"
     };
+
+    // Kendi belirleyeceğin yönetici şifresini aşağıdaki tırnak içine yaz:
+    const ADMIN_PASSWORDS = ["12345"];
+    const DEFAULT_LESSONS = 8;
 
     let db = null;
     let useCloud = false;
     let students = [];
+    let currentParentQuery = "";
 
     const statusBadge = document.getElementById("cloudStatus");
 
@@ -191,20 +189,31 @@
         db = firebase.firestore();
         useCloud = true;
         statusBadge.textContent = "🟢 Bulut Aktif (Canlı)";
-        statusBadge.className = "text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-300/40 text-white";
+        statusBadge.className = "text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200";
       } else {
         throw new Error("API Key bekleniyor");
       }
     } catch (e) {
       statusBadge.textContent = "🟡 Yerel Mod (Config Bekleniyor)";
-      students = JSON.parse(localStorage.getItem("blu_students") || "[]");
+      statusBadge.className = "text-xs font-semibold px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200";
+      students = JSON.parse(localStorage.getItem("blu_students_v2") || "[]");
     }
 
-    // Canlı veri dinleyici
     if (useCloud && db) {
       db.collection("students").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
-        students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        students = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            remainingLessons: typeof data.remainingLessons === "number" ? data.remainingLessons : DEFAULT_LESSONS,
+            attendanceHistory: Array.isArray(data.attendanceHistory) ? data.attendanceHistory : [],
+            ...data
+          };
+        });
         renderStudents();
+        if (!document.getElementById("parentSection").classList.contains("hidden") && currentParentQuery) {
+          renderParentView(currentParentQuery);
+        }
       }, (err) => {
         console.error(err);
         statusBadge.textContent = "🔴 Bulut Kural Hatası";
@@ -212,11 +221,26 @@
     }
 
     function saveLocal() {
-      localStorage.setItem("blu_students", JSON.stringify(students));
+      localStorage.setItem("blu_students_v2", JSON.stringify(students));
       renderStudents();
+      if (!document.getElementById("parentSection").classList.contains("hidden") && currentParentQuery) {
+        renderParentView(currentParentQuery);
+      }
     }
 
-    // Giriş Sekmeleri
+    function getInitials(name = "") {
+      const parts = name.trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return "BA";
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function formatNowDateTime() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, "0");
+      return `${pad(now.getDate())}.${pad(now.getMonth() + 1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    }
+
     function switchLoginTab(tab) {
       const isAdmin = tab === "admin";
       document.getElementById("adminForm").classList.toggle("hidden", !isAdmin);
@@ -233,49 +257,140 @@
     function handleAdminLogin(e) {
       e.preventDefault();
       const pass = document.getElementById("adminPass").value.trim();
-      if (pass === "blu2026" || pass === "1234") {
+      if (ADMIN_PASSWORDS.includes(pass)) {
         document.getElementById("loginSection").classList.add("hidden");
+        document.getElementById("parentSection").classList.add("hidden");
         document.getElementById("adminSection").classList.remove("hidden");
         document.getElementById("logoutBtn").classList.remove("hidden");
+        document.getElementById("headerSubtitle").textContent = "Yönetici Yönetim Paneli";
         renderStudents();
       } else {
-        showError("Hatalı yönetici şifresi. (Varsayılan şifre: blu2026)");
+        showError("Hatalı yönetici şifresi.");
       }
     }
 
     function handleParentLogin(e) {
       e.preventDefault();
-      const q = document.getElementById("parentQuery").value.trim().toLowerCase();
-      const matches = students.filter(s =>
-        (s.name && s.name.toLowerCase().includes(q)) ||
-        (s.parent && s.parent.toLowerCase().includes(q))
-      );
+      const q = document.getElementById("parentQuery").value.trim();
+      const matches = findParentMatches(q);
       if (matches.length === 0) {
         showError("Eşleşen öğrenci kaydı bulunamadı. Lütfen yöneticiyle iletişime geçin.");
         return;
       }
+      currentParentQuery = q;
       document.getElementById("loginSection").classList.add("hidden");
+      document.getElementById("adminSection").classList.add("hidden");
       document.getElementById("parentSection").classList.remove("hidden");
       document.getElementById("logoutBtn").classList.remove("hidden");
+      document.getElementById("headerSubtitle").textContent = "Veli Bilgilendirme Ekranı";
+      renderParentView(q);
+    }
 
+    function findParentMatches(query) {
+      const q = query.trim().toLowerCase();
+      return students.filter(s =>
+        (s.name && s.name.toLowerCase().includes(q)) ||
+        (s.parent && s.parent.toLowerCase().includes(q))
+      );
+    }
+
+    function renderParentView(query) {
+      const matches = findParentMatches(query);
       const container = document.getElementById("parentResults");
-      container.innerHTML = matches.map(s => `
-        <div class="p-4 rounded-xl border border-sky-100 bg-sky-50/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h4 class="font-bold text-slate-900 text-base">${s.name}</h4>
-            <p class="text-xs text-slate-600 mt-0.5">${s.group} • <strong>${s.schedule}</strong></p>
-            <p class="text-xs text-slate-500 mt-1">Veli: ${s.parent}</p>
+
+      container.innerHTML = matches.map(s => {
+        const lessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
+        const history = Array.isArray(s.attendanceHistory) ? s.attendanceHistory : [];
+        const lowLessonsWarning = lessons <= 2;
+
+        const historyHtml = history.length === 0
+          ? `<div class="text-xs text-slate-400 py-4 text-center">Henüz tarihli yoklama kaydı bulunmuyor.</div>`
+          : history.map(item => {
+              const isPresent = item.status === "Geldi";
+              return `
+                <div class="p-3 rounded-xl border flex items-center justify-between gap-3 ${isPresent ? 'bg-emerald-50/70 border-emerald-200/80' : 'bg-rose-50/70 border-rose-200/80'}">
+                  <div>
+                    <div class="text-xs font-bold text-slate-800">Yüzme Dersi (${s.group})</div>
+                    <div class="text-[11px] text-slate-500 mt-0.5">${item.date || ''}</div>
+                  </div>
+                  <span class="px-2.5 py-0.5 rounded-md text-xs font-semibold ${isPresent ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                    ${isPresent ? 'Geldi' : 'Gelmedi'}
+                  </span>
+                </div>
+              `;
+            }).join("");
+
+        return `
+          <div class="space-y-4">
+            <!-- Öğrenci Kimlik & Kalan Ders Kartı -->
+            <div class="blu-gradient rounded-2xl p-5 sm:p-6 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-5">
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center font-extrabold text-xl shrink-0">
+                  ${getInitials(s.name)}
+                </div>
+                <div>
+                  <span class="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/20 mb-1.5">
+                    ${s.group}
+                  </span>
+                  <h3 class="text-xl sm:text-2xl font-extrabold tracking-tight">${s.name}</h3>
+                  <p class="text-xs sm:text-sm text-sky-100 mt-0.5">Veli: ${s.parent}</p>
+                </div>
+              </div>
+
+              <div class="bg-white text-slate-800 rounded-xl px-5 py-3.5 shadow-sm min-w-[180px]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">KALAN DERS HAKKI</div>
+                <div class="flex items-baseline gap-1.5 mt-1">
+                  <span class="text-3xl font-extrabold ${lowLessonsWarning ? 'text-amber-600' : 'text-blue-700'}">${lessons}</span>
+                  <span class="text-xs font-semibold text-slate-500">Ders</span>
+                </div>
+                ${lowLessonsWarning
+                  ? `<div class="text-[11px] font-semibold text-amber-600 mt-1">⚠️ Ders paketiniz azaldı!</div>`
+                  : `<div class="text-[11px] text-slate-400 mt-1">Başlangıç paketi: ${DEFAULT_LESSONS} ders</div>`
+                }
+              </div>
+            </div>
+
+            <!-- Alt Bilgi Kartları -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-4">
+                <!-- Haftalık Ders Programı -->
+                <div class="bg-white rounded-2xl border border-sky-100 p-5 shadow-sm">
+                  <h4 class="text-sm font-bold text-slate-800 mb-3">📅 Haftalık Ders Programı / Ders Günleri ve Saati</h4>
+                  <div class="bg-sky-50/80 border border-sky-100 rounded-xl p-4">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-blue-700">HAVUZ ANTRENMAN TAKVİMİ</div>
+                    <div class="text-base font-extrabold text-slate-900 mt-1">${s.schedule}</div>
+                    <p class="text-xs text-slate-500 mt-1.5">Lütfen ders saatinden 10 dakika önce havuzda hazır olunuz.</p>
+                  </div>
+                </div>
+
+                <!-- Aidat & Ödeme Durumu -->
+                <div class="bg-white rounded-2xl border border-sky-100 p-5 shadow-sm">
+                  <h4 class="text-sm font-bold text-slate-800 mb-3">💳 Aidat & Ödeme Durumu</h4>
+                  <div class="flex items-center justify-between gap-3 pt-1">
+                    <span class="text-xs font-medium text-slate-600">Güncel Ödeme Durumu</span>
+                    <span class="px-3 py-1 rounded-lg text-xs font-bold ${s.paid ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+                      ${s.paid ? '✓ Ödemesi Tamam' : '⏳ Ödeme Bekliyor'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tarihli Havuz Yoklama Geçmişi -->
+              <div class="bg-white rounded-2xl border border-sky-100 p-5 shadow-sm">
+                <div class="flex items-center justify-between gap-2 mb-3">
+                  <h4 class="text-sm font-bold text-slate-800">📋 Tarihli Havuz Yoklama Geçmişi</h4>
+                  <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                    ${history.length} Kayıt
+                  </span>
+                </div>
+                <div class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                  ${historyHtml}
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 rounded-full text-xs font-semibold ${s.attendance === 'Katıldı' ? 'bg-emerald-100 text-emerald-700' : s.attendance === 'Katılmadı' ? 'bg-red-100 text-red-700' : 'bg-slate-200 text-slate-700'}">
-              Yoklama: ${s.attendance || 'Bekleniyor'}
-            </span>
-            <span class="px-3 py-1 rounded-full text-xs font-semibold ${s.paid ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}">
-              Aidat: ${s.paid ? 'Ödendi' : 'Ödeme Bekliyor'}
-            </span>
-          </div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
     }
 
     function showError(msg) {
@@ -285,21 +400,26 @@
     }
 
     function logout() {
+      currentParentQuery = "";
       document.getElementById("adminSection").classList.add("hidden");
       document.getElementById("parentSection").classList.add("hidden");
       document.getElementById("logoutBtn").classList.add("hidden");
       document.getElementById("loginSection").classList.remove("hidden");
+      document.getElementById("headerSubtitle").textContent = "Yüzme Okulu Yönetim & Veli Takip Portalı";
     }
 
-    // CRUD İşlemleri
     async function addStudent(e) {
       e.preventDefault();
+      const lessonInput = parseInt(document.getElementById("sLessons").value, 10);
+      const remainingLessons = Number.isNaN(lessonInput) ? DEFAULT_LESSONS : Math.max(0, lessonInput);
+
       const newStudent = {
         name: document.getElementById("sName").value.trim(),
         parent: document.getElementById("sParent").value.trim(),
         group: document.getElementById("sGroup").value,
         schedule: document.getElementById("sSchedule").value.trim(),
-        attendance: "Bekleniyor",
+        remainingLessons,
+        attendanceHistory: [],
         paid: false,
         createdAt: Date.now()
       };
@@ -312,15 +432,42 @@
         saveLocal();
       }
       e.target.reset();
+      document.getElementById("sLessons").value = DEFAULT_LESSONS;
     }
 
-    async function toggleAttendance(id, current) {
-      const next = current === "Katıldı" ? "Katılmadı" : current === "Katılmadı" ? "Bekleniyor" : "Katıldı";
+    async function recordAttendance(id, status) {
+      const s = students.find(x => x.id === id);
+      if (!s) return;
+
+      const currentLessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
+      const nextLessons = status === "Geldi" ? Math.max(0, currentLessons - 1) : currentLessons;
+      const nextHistory = [
+        { date: formatNowDateTime(), status },
+        ...(Array.isArray(s.attendanceHistory) ? s.attendanceHistory : [])
+      ];
+
       if (useCloud && db) {
-        await db.collection("students").doc(id).update({ attendance: next });
+        await db.collection("students").doc(id).update({
+          remainingLessons: nextLessons,
+          attendanceHistory: nextHistory
+        });
       } else {
-        const s = students.find(x => x.id === id);
-        if (s) s.attendance = next;
+        s.remainingLessons = nextLessons;
+        s.attendanceHistory = nextHistory;
+        saveLocal();
+      }
+    }
+
+    async function adjustLessons(id, delta) {
+      const s = students.find(x => x.id === id);
+      if (!s) return;
+      const currentLessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
+      const nextLessons = Math.max(0, currentLessons + delta);
+
+      if (useCloud && db) {
+        await db.collection("students").doc(id).update({ remainingLessons: nextLessons });
+      } else {
+        s.remainingLessons = nextLessons;
         saveLocal();
       }
     }
@@ -348,13 +495,14 @@
     function renderStudents() {
       const filter = (document.getElementById("searchInput")?.value || "").toLowerCase();
       const filtered = students.filter(s =>
-        s.name.toLowerCase().includes(filter) ||
-        s.group.toLowerCase().includes(filter) ||
-        s.parent.toLowerCase().includes(filter)
+        (s.name || "").toLowerCase().includes(filter) ||
+        (s.group || "").toLowerCase().includes(filter) ||
+        (s.parent || "").toLowerCase().includes(filter)
       );
 
+      const totalLessons = students.reduce((sum, s) => sum + (typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS), 0);
       document.getElementById("statTotal").textContent = students.length;
-      document.getElementById("statPresent").textContent = students.filter(s => s.attendance === "Katıldı").length;
+      document.getElementById("statLessons").textContent = totalLessons;
       document.getElementById("statPaid").textContent = students.filter(s => s.paid).length;
       document.getElementById("statUnpaid").textContent = students.filter(s => !s.paid).length;
 
@@ -365,34 +513,44 @@
       }
 
       tbody.innerHTML = filtered.map(s => {
-        const attClass = s.attendance === "Katıldı"
-          ? "bg-emerald-100 text-emerald-700 border-emerald-200"
-          : s.attendance === "Katılmadı"
-          ? "bg-red-100 text-red-700 border-red-200"
-          : "bg-slate-100 text-slate-700 border-slate-200";
-
+        const lessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
         const payClass = s.paid
-          ? "bg-blue-100 text-blue-700 border-blue-200"
+          ? "bg-emerald-100 text-emerald-700 border-emerald-200"
           : "bg-amber-100 text-amber-700 border-amber-200";
 
         return `
           <tr class="hover:bg-sky-50/40 transition">
-            <td class="py-3 px-4 font-semibold text-slate-900">${s.name}</td>
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-900">${s.name}</div>
+              <div class="text-xs text-slate-500">${s.parent}</div>
+            </td>
             <td class="py-3 px-4">
               <div class="text-xs font-semibold text-blue-700">${s.group}</div>
               <div class="text-xs text-slate-500">${s.schedule}</div>
             </td>
-            <td class="py-3 px-4 text-xs text-slate-600">${s.parent}</td>
             <td class="py-3 px-4">
-              <button onclick="toggleAttendance('${s.id}', '${s.attendance || 'Bekleniyor'}')"
-                class="px-3 py-1 rounded-full text-xs font-semibold border ${attClass} transition">
-                ${s.attendance || 'Bekleniyor'}
-              </button>
+              <div class="inline-flex items-center gap-1.5 bg-slate-100 rounded-lg px-2 py-1">
+                <button onclick="adjustLessons('${s.id}', -1)" class="w-5 h-5 rounded bg-white text-slate-700 font-bold text-xs shadow-sm">-</button>
+                <span class="text-xs font-extrabold text-blue-800 min-w-[48px] text-center">${lessons} Ders</span>
+                <button onclick="adjustLessons('${s.id}', 1)" class="w-5 h-5 rounded bg-white text-slate-700 font-bold text-xs shadow-sm">+</button>
+              </div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex flex-wrap gap-1.5">
+                <button onclick="recordAttendance('${s.id}', 'Geldi')"
+                  class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition">
+                  + Geldi
+                </button>
+                <button onclick="recordAttendance('${s.id}', 'Gelmedi')"
+                  class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-100 text-rose-700 hover:bg-rose-200 transition">
+                  + Gelmedi
+                </button>
+              </div>
             </td>
             <td class="py-3 px-4">
               <button onclick="togglePayment('${s.id}', ${Boolean(s.paid)})"
                 class="px-3 py-1 rounded-full text-xs font-semibold border ${payClass} transition">
-                ${s.paid ? 'Ödendi' : 'Bekliyor'}
+                ${s.paid ? 'Ödendi' : 'Ödeme Bekliyor'}
               </button>
             </td>
             <td class="py-3 px-4 text-right">
