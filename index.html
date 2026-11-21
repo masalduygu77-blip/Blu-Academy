@@ -73,7 +73,7 @@
       <form id="parentForm" onsubmit="handleParentLogin(event)" class="space-y-4 hidden">
         <div>
           <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Öğrenci Adı veya Veli Bilgisi</label>
-          <input type="text" id="parentQuery" placeholder="Örn: Duru Harputluoğlu veya telefon" required
+          <input type="text" id="parentQuery" placeholder="Örn: Veli telefon numarası" required
             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
         </div>
         <button type="submit" class="w-full blu-gradient text-white font-semibold py-2.5 rounded-xl shadow hover:opacity-95 transition">
@@ -110,24 +110,51 @@
     <!-- Yeni Yüzücü Ekleme Formu (Varsayılan 8 Ders) -->
     <div class="bg-white p-5 rounded-2xl border border-sky-100 shadow-sm">
       <h3 class="text-base font-bold text-slate-900 mb-4">Yeni Yüzücü Kaydı Ekle (8 Ders Paket)</h3>
-      <form onsubmit="addStudent(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
-        <input type="text" id="sName" placeholder="Yüzücü Adı Soyadı" required
-          class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-        <input type="text" id="sParent" placeholder="Veli Adı & Telefon" required
-          class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-        <select id="sGroup" class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
-          <option value="Başlangıç">Başlangıç</option>
-          <option value="Gelişim">Gelişim</option>
-          <option value="Performans">Performans</option>
-          <option value="Yetişkin">Yetişkin</option>
-        </select>
-        <input type="text" id="sSchedule" placeholder="Gün / Saat (Örn: Çarşamba - Cuma • 16:00)" required
-          class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-        <input type="number" id="sLessons" value="8" min="0" max="100" required
-          class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-        <button type="submit" class="blu-gradient text-white font-semibold text-sm py-2 px-4 rounded-xl shadow hover:opacity-95 transition">
-          + Kaydet
-        </button>
+      <form onsubmit="addStudent(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 mb-1">Yüzücü Adı Soyadı</label>
+          <input type="text" id="sName" placeholder="Yüzücü Adı Soyadı" required
+            class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 mb-1">Çocuğun Doğum Tarihi</label>
+          <input type="date" id="sBirthDate" required
+            class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 mb-1">Veli Adı Soyadı</label>
+          <input type="text" id="sParentName" placeholder="Veli Adı Soyadı" required
+            class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 mb-1">Veli Telefon Numarası</label>
+          <input type="tel" id="sParentPhone" placeholder="Veli Telefon Numarası" required
+            class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 mb-1">Grup</label>
+          <select id="sGroup" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="Başlangıç">Başlangıç</option>
+            <option value="Gelişim">Gelişim</option>
+            <option value="Performans">Performans</option>
+            <option value="Yetişkin">Yetişkin</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 mb-1">Ders Günleri & Saati</label>
+          <input type="text" id="sSchedule" placeholder="Gün / Saat (Örn: Çarşamba - Cuma • 16:00)" required
+            class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-500 mb-1">Paket Ders Hakkı</label>
+          <input type="number" id="sLessons" value="8" min="0" max="100" required
+            class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div class="flex items-end">
+          <button type="submit" class="w-full blu-gradient text-white font-semibold text-sm py-2.5 px-4 rounded-xl shadow hover:opacity-95 transition">
+            + Kaydet
+          </button>
+        </div>
       </form>
     </div>
 
@@ -135,14 +162,15 @@
     <div class="bg-white rounded-2xl border border-sky-100 shadow-sm overflow-hidden">
       <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
         <h3 class="text-base font-bold text-slate-900">Yüzücü Listesi, Yoklama Kaydı & Ders Hakları</h3>
-        <input type="text" id="searchInput" oninput="renderStudents()" placeholder="İsim, grup veya veli ara..."
+        <input type="text" id="searchInput" oninput="renderStudents()" placeholder="İsim, veli, telefon veya grup ara..."
           class="px-3.5 py-1.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-sky-50/70 text-xs font-semibold text-slate-600 uppercase">
-              <th class="py-3 px-4">Yüzücü & Veli</th>
+              <th class="py-3 px-4">Yüzücü & Doğum Tarihi</th>
+              <th class="py-3 px-4">Veli Ad Soyad & Telefon</th>
               <th class="py-3 px-4">Grup & Program</th>
               <th class="py-3 px-4">Kalan Ders</th>
               <th class="py-3 px-4">Tarihli Yoklama Ekle</th>
@@ -169,10 +197,9 @@
       projectId: "blu-academy-9b31a",
       storageBucket: "blu-academy-9b31a.firebasestorage.app",
       messagingSenderId: "264057953862",
-      appId: "1:264057953862:web:fed627f1f5826b7937b447"
+      appId: "1:264057953862:web:fed627f1f5826b7937b447"
     };
 
-    // Kendi belirleyeceğin yönetici şifresini aşağıdaki tırnak içine yaz:
     const ADMIN_PASSWORDS = ["12345"];
     const DEFAULT_LESSONS = 8;
 
@@ -235,6 +262,31 @@
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
 
+    function formatBirthDate(dateStr = "") {
+      if (!dateStr) return "Belirtilmedi";
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr.trim());
+      return match ? `${match[3]}.${match[2]}.${match[1]}` : dateStr;
+    }
+
+    function getParentDetails(student) {
+      const hasName = typeof student.parentName === "string" && student.parentName.trim().length > 0;
+      const hasPhone = typeof student.parentPhone === "string" && student.parentPhone.trim().length > 0;
+      if (hasName || hasPhone) {
+        return {
+          parentName: hasName ? student.parentName.trim() : "Belirtilmedi",
+          parentPhone: hasPhone ? student.parentPhone.trim() : "Belirtilmedi"
+        };
+      }
+      const raw = (student.parent || "").trim();
+      const phoneMatch = raw.match(/(\+?\d[\d\s\-()]{6,}\d)/);
+      if (phoneMatch) {
+        const phone = phoneMatch[1].trim();
+        const namePart = raw.replace(phoneMatch[1], "").replace(/[•|\-–—]+$/g, "").trim();
+        return { parentName: namePart || "Belirtilmedi", parentPhone: phone };
+      }
+      return { parentName: raw || "Belirtilmedi", parentPhone: "Belirtilmedi" };
+    }
+
     function formatNowDateTime() {
       const now = new Date();
       const pad = n => String(n).padStart(2, "0");
@@ -288,10 +340,15 @@
 
     function findParentMatches(query) {
       const q = query.trim().toLowerCase();
-      return students.filter(s =>
-        (s.name && s.name.toLowerCase().includes(q)) ||
-        (s.parent && s.parent.toLowerCase().includes(q))
-      );
+      return students.filter(s => {
+        const pInfo = getParentDetails(s);
+        return (
+          (s.name && s.name.toLowerCase().includes(q)) ||
+          (s.parent && s.parent.toLowerCase().includes(q)) ||
+          pInfo.parentName.toLowerCase().includes(q) ||
+          pInfo.parentPhone.toLowerCase().includes(q)
+        );
+      });
     }
 
     function renderParentView(query) {
@@ -302,6 +359,8 @@
         const lessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
         const history = Array.isArray(s.attendanceHistory) ? s.attendanceHistory : [];
         const lowLessonsWarning = lessons <= 2;
+        const pInfo = getParentDetails(s);
+        const birthFormatted = formatBirthDate(s.birthDate);
 
         const historyHtml = history.length === 0
           ? `<div class="text-xs text-slate-400 py-4 text-center">Henüz tarihli yoklama kaydı bulunmuyor.</div>`
@@ -324,16 +383,24 @@
           <div class="space-y-4">
             <!-- Öğrenci Kimlik & Kalan Ders Kartı -->
             <div class="blu-gradient rounded-2xl p-5 sm:p-6 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-5">
-              <div class="flex items-center gap-4">
+              <div class="flex items-start sm:items-center gap-4">
                 <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center font-extrabold text-xl shrink-0">
                   ${getInitials(s.name)}
                 </div>
                 <div>
-                  <span class="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/20 mb-1.5">
-                    ${s.group}
-                  </span>
+                  <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                    <span class="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/20">
+                      ${s.group}
+                    </span>
+                    <span class="inline-block text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-white/15 text-sky-50">
+                      🎂 Doğum Tarihi: ${birthFormatted}
+                    </span>
+                  </div>
                   <h3 class="text-xl sm:text-2xl font-extrabold tracking-tight">${s.name}</h3>
-                  <p class="text-xs sm:text-sm text-sky-100 mt-0.5">Veli: ${s.parent}</p>
+                  <div class="mt-1.5 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 text-xs sm:text-sm text-sky-100">
+                    <span>👤 Veli: <strong class="font-semibold text-white">${pInfo.parentName}</strong></span>
+                    <span>📞 Telefon: <strong class="font-semibold text-white">${pInfo.parentPhone}</strong></span>
+                  </div>
                 </div>
               </div>
 
@@ -412,10 +479,15 @@
       e.preventDefault();
       const lessonInput = parseInt(document.getElementById("sLessons").value, 10);
       const remainingLessons = Number.isNaN(lessonInput) ? DEFAULT_LESSONS : Math.max(0, lessonInput);
+      const parentName = document.getElementById("sParentName").value.trim();
+      const parentPhone = document.getElementById("sParentPhone").value.trim();
 
       const newStudent = {
         name: document.getElementById("sName").value.trim(),
-        parent: document.getElementById("sParent").value.trim(),
+        birthDate: document.getElementById("sBirthDate").value,
+        parentName,
+        parentPhone,
+        parent: `${parentName} • ${parentPhone}`,
         group: document.getElementById("sGroup").value,
         schedule: document.getElementById("sSchedule").value.trim(),
         remainingLessons,
@@ -494,11 +566,16 @@
 
     function renderStudents() {
       const filter = (document.getElementById("searchInput")?.value || "").toLowerCase();
-      const filtered = students.filter(s =>
-        (s.name || "").toLowerCase().includes(filter) ||
-        (s.group || "").toLowerCase().includes(filter) ||
-        (s.parent || "").toLowerCase().includes(filter)
-      );
+      const filtered = students.filter(s => {
+        const pInfo = getParentDetails(s);
+        return (
+          (s.name || "").toLowerCase().includes(filter) ||
+          (s.group || "").toLowerCase().includes(filter) ||
+          (s.parent || "").toLowerCase().includes(filter) ||
+          pInfo.parentName.toLowerCase().includes(filter) ||
+          pInfo.parentPhone.toLowerCase().includes(filter)
+        );
+      });
 
       const totalLessons = students.reduce((sum, s) => sum + (typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS), 0);
       document.getElementById("statTotal").textContent = students.length;
@@ -508,12 +585,14 @@
 
       const tbody = document.getElementById("studentTableBody");
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">Henüz kayıtlı yüzücü bulunmuyor.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">Henüz kayıtlı yüzücü bulunmuyor.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = filtered.map(s => {
         const lessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
+        const pInfo = getParentDetails(s);
+        const birthFormatted = formatBirthDate(s.birthDate);
         const payClass = s.paid
           ? "bg-emerald-100 text-emerald-700 border-emerald-200"
           : "bg-amber-100 text-amber-700 border-amber-200";
@@ -522,7 +601,11 @@
           <tr class="hover:bg-sky-50/40 transition">
             <td class="py-3 px-4">
               <div class="font-bold text-slate-900">${s.name}</div>
-              <div class="text-xs text-slate-500">${s.parent}</div>
+              <div class="text-xs text-slate-500">Doğum: ${birthFormatted}</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="text-xs font-semibold text-slate-800">${pInfo.parentName}</div>
+              <div class="text-xs text-slate-500">${pInfo.parentPhone}</div>
             </td>
             <td class="py-3 px-4">
               <div class="text-xs font-semibold text-blue-700">${s.group}</div>
