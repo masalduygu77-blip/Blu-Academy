@@ -137,9 +137,62 @@
       </div>
     </div>
 
+    <!-- Sadece Yönetici: Sporcu Arama (Veli Şifresi Dahil Kart Açma) & Son 2 Dersi Kalanlar Not Kutusu -->
+    <div id="adminQuickToolsGrid" class="hidden grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Sporcu Arama & Tüm Bilgileri Açma -->
+      <div class="bg-white p-5 rounded-2xl border border-sky-100 shadow-sm space-y-3">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">🔍 Sporcu Arama & Detay Kartı</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Sporcu adını yazıp üzerine tıklayın; veli şifresi dahil tüm bilgileri açılsın.</p>
+        </div>
+        <input type="text" id="quickLookupInput" oninput="renderQuickLookupResults()" placeholder="Sporcu adı veya soyadı yazın..."
+          class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        <div id="quickLookupResults" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto"></div>
+      </div>
+
+      <!-- Küçük Notlar: Son 2 Dersi Kalanlar -->
+      <div class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">📝 Küçük Notlar — Son 2 Dersi Kalanlar</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Kalan dersi 2 veya daha az olan sporcular listelenir.</p>
+          </div>
+          <span id="lowLessonsBadgeCount" class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800">0</span>
+        </div>
+        <div id="lowLessonsNotesList" class="space-y-1.5 max-h-36 overflow-y-auto text-xs"></div>
+      </div>
+    </div>
+
     <!-- Sadece Yönetici: Antrenör Sekmeleri -->
     <div id="coachTabsBar" class="hidden bg-white p-3 rounded-2xl border border-sky-100 shadow-sm">
       <div id="coachTabsContainer" class="flex flex-wrap items-center gap-2"></div>
+    </div>
+
+    <!-- Toplu Yoklama Modu -->
+    <div class="bg-white p-5 rounded-2xl border border-sky-100 shadow-sm space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">📋 Toplu Yoklama Modu</h3>
+          <p class="text-xs text-slate-500">Grup seçip yüzücülere Geldi, Gelmedi veya Telafi işaretleyerek tek seferde kaydedin.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="bulkGroupSelect" onchange="renderBulkAttendanceList()" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="Temel Eğitim">Temel Eğitim</option>
+            <option value="Performans">Performans</option>
+            <option value="Yetişkin">Yetişkin</option>
+          </select>
+          <button type="button" onclick="setAllBulkStatus('Geldi')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition">
+            Tümü Geldi
+          </button>
+          <button type="button" onclick="setAllBulkStatus('Telafi')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition">
+            Tümü Telafi
+          </button>
+          <button type="button" onclick="saveBulkAttendance()" class="blu-gradient text-white font-semibold text-xs py-1.5 px-4 rounded-xl shadow hover:opacity-95 transition">
+            Toplu Yoklamayı Kaydet
+          </button>
+        </div>
+      </div>
+      <div id="bulkAttendanceList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
     </div>
 
     <!-- Sadece Yönetici: Antrenör Ekleme & Listesi -->
@@ -233,29 +286,29 @@
           </button>
         </div>
 
-        <!-- Performans Grubu Stil Dereceleri (Yeni Kayıt) -->
-        <div id="newPerfBox" class="hidden sm:col-span-2 lg:col-span-4 bg-sky-50/80 border border-sky-200 rounded-xl p-4">
-          <div class="text-xs font-bold text-blue-900 mb-2.5">🏊 Performans Grubu Stil Dereceleri (İsteğe Bağlı)</div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-600 mb-1">Serbest</label>
-              <input type="text" id="sPerfFree" placeholder="Örn: 00:32.40"
-                class="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        <!-- Performans Grubu Stil Dereceleri: Önceki -> Son Derece (Yeni Kayıt) -->
+        <div id="newPerfBox" class="hidden sm:col-span-2 lg:col-span-4 bg-sky-50/80 border border-sky-200 rounded-xl p-4 space-y-3">
+          <div class="text-xs font-bold text-blue-900">🏊 Performans Grubu Stil Dereceleri — Önceki & Son Derece (İsteğe Bağlı)</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="bg-white p-2.5 rounded-lg border border-sky-100 space-y-1.5">
+              <div class="text-[11px] font-bold text-blue-800">Serbest</div>
+              <input type="text" id="sPerfFreePrev" placeholder="Önceki (Örn: 00:34.20)" class="w-full px-2.5 py-1 rounded border border-slate-200 text-xs" />
+              <input type="text" id="sPerfFree" placeholder="Son (Örn: 00:32.40)" class="w-full px-2.5 py-1 rounded border border-slate-200 text-xs" />
             </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-600 mb-1">Sırt</label>
-              <input type="text" id="sPerfBack" placeholder="Örn: 00:37.10"
-                class="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            <div class="bg-white p-2.5 rounded-lg border border-sky-100 space-y-1.5">
+              <div class="text-[11px] font-bold text-blue-800">Sırt</div>
+              <input type="text" id="sPerfBackPrev" placeholder="Önceki (Örn: 00:39.00)" class="w-full px-2.5 py-1 rounded border border-slate-200 text-xs" />
+              <input type="text" id="sPerfBack" placeholder="Son (Örn: 00:37.10)" class="w-full px-2.5 py-1 rounded border border-slate-200 text-xs" />
             </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-600 mb-1">Kurbağa</label>
-              <input type="text" id="sPerfBreast" placeholder="Örn: 00:42.85"
-                class="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            <div class="bg-white p-2.5 rounded-lg border border-sky-100 space-y-1.5">
+              <div class="text-[11px] font-bold text-blue-800">Kurbağa</div>
+              <input type="text" id="sPerfBreastPrev" placeholder="Önceki (Örn: 00:44.50)" class="w-full px-2.5 py-1 rounded border border-slate-200 text-xs" />
+              <input type="text" id="sPerfBreast" placeholder="Son (Örn: 00:42.85)" class="w-full px-2.5 py-1 rounded border border-slate-200 text-xs" />
             </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-600 mb-1">Kelebek</label>
-              <input type="text" id="sPerfFly" placeholder="Örn: 00:35.90"
-                class="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            <div class="bg-white p-2.5 rounded-lg border border-sky-100 space-y-1.5">
+              <div class="text-[11px] font-bold text-blue-800">Kelebek</div>
+              <input type="text" id="sPerfFlyPrev" placeholder="Önceki (Örn: 00:37.80)" class="w-full px-2.5 py-1 rounded border border-slate-200 text-xs" />
+              <input type="text" id="sPerfFly" placeholder="Son (Örn: 00:35.90)" class="w-full px-2.5 py-1 rounded border border-slate-200 text-xs" />
             </div>
           </div>
         </div>
@@ -355,42 +408,54 @@
       </form>
     </div>
 
-    <!-- Performans Grubu Derece Düzenleme Kutusu -->
-    <div id="perfEditorCard" class="hidden bg-white p-5 rounded-2xl border border-blue-200 shadow-sm">
-      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+    <!-- Performans Grubu Derece Düzenleme Kutusu (Önceki -> Son Kıyaslamalı) -->
+    <div id="perfEditorCard" class="hidden bg-white p-5 rounded-2xl border border-blue-200 shadow-sm space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700">PERFORMANS DERECE DÜZENLEME</span>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-blue-700">PERFORMANS DERECE & GELİŞİM DÜZENLEME</span>
           <h4 id="perfEditorTitle" class="text-base font-bold text-slate-900">Yüzücü Stil Dereceleri</h4>
         </div>
         <button onclick="closePerfEditor()" class="text-xs font-semibold text-slate-500 hover:text-slate-800 px-3 py-1 rounded-lg border border-slate-200">
           Kapat
         </button>
       </div>
-      <form onsubmit="savePerfTimes(event)" class="grid grid-cols-2 sm:grid-cols-5 gap-3 items-end">
+      <form onsubmit="savePerfTimes(event)" class="space-y-3">
         <input type="hidden" id="perfStudentId" />
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Serbest</label>
-          <input type="text" id="editPerfFree" placeholder="Örn: 00:32.40"
-            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="bg-sky-50/70 p-3 rounded-xl border border-sky-100 space-y-1.5">
+            <div class="text-xs font-bold text-blue-900">Serbest</div>
+            <label class="block text-[10px] font-semibold text-slate-500">Önceki Derece</label>
+            <input type="text" id="editPerfFreePrev" placeholder="Örn: 00:34.20" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-sm" />
+            <label class="block text-[10px] font-semibold text-slate-500">Son Derece</label>
+            <input type="text" id="editPerfFree" placeholder="Örn: 00:32.40" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-sm" />
+          </div>
+          <div class="bg-sky-50/70 p-3 rounded-xl border border-sky-100 space-y-1.5">
+            <div class="text-xs font-bold text-blue-900">Sırt</div>
+            <label class="block text-[10px] font-semibold text-slate-500">Önceki Derece</label>
+            <input type="text" id="editPerfBackPrev" placeholder="Örn: 00:39.00" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-sm" />
+            <label class="block text-[10px] font-semibold text-slate-500">Son Derece</label>
+            <input type="text" id="editPerfBack" placeholder="Örn: 00:37.10" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-sm" />
+          </div>
+          <div class="bg-sky-50/70 p-3 rounded-xl border border-sky-100 space-y-1.5">
+            <div class="text-xs font-bold text-blue-900">Kurbağa</div>
+            <label class="block text-[10px] font-semibold text-slate-500">Önceki Derece</label>
+            <input type="text" id="editPerfBreastPrev" placeholder="Örn: 00:44.50" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-sm" />
+            <label class="block text-[10px] font-semibold text-slate-500">Son Derece</label>
+            <input type="text" id="editPerfBreast" placeholder="Örn: 00:42.85" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-sm" />
+          </div>
+          <div class="bg-sky-50/70 p-3 rounded-xl border border-sky-100 space-y-1.5">
+            <div class="text-xs font-bold text-blue-900">Kelebek</div>
+            <label class="block text-[10px] font-semibold text-slate-500">Önceki Derece</label>
+            <input type="text" id="editPerfFlyPrev" placeholder="Örn: 00:37.80" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-sm" />
+            <label class="block text-[10px] font-semibold text-slate-500">Son Derece</label>
+            <input type="text" id="editPerfFly" placeholder="Örn: 00:35.90" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-sm" />
+          </div>
         </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Sırt</label>
-          <input type="text" id="editPerfBack" placeholder="Örn: 00:37.10"
-            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        <div class="flex justify-end">
+          <button type="submit" class="blu-gradient text-white font-semibold text-sm py-2 px-5 rounded-xl shadow hover:opacity-95 transition">
+            Dereceleri Kaydet
+          </button>
         </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Kurbağa</label>
-          <input type="text" id="editPerfBreast" placeholder="Örn: 00:42.85"
-            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-600 mb-1">Kelebek</label>
-          <input type="text" id="editPerfFly" placeholder="Örn: 00:35.90"
-            class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-        </div>
-        <button type="submit" class="blu-gradient text-white font-semibold text-sm py-2 px-4 rounded-xl shadow hover:opacity-95 transition">
-          Dereceleri Kaydet
-        </button>
       </form>
     </div>
 
@@ -437,7 +502,7 @@
       <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 id="studentTableTitle" class="text-base font-bold text-slate-900">Yüzücü Listesi, Yoklama Kaydı & Ders Hakları</h3>
-          <p class="text-xs text-slate-500 mt-0.5">Tarihli katılım/devamsızlık/telafi geçmişini düzenlemek ve veli kartını görmek için yüzücü adına tıklayın.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Veli şifresi dahil tüm bilgileri ve yoklama geçmişini açmak için yüzücü adına tıklayın.</p>
         </div>
         <input type="text" id="searchInput" oninput="renderStudents()" placeholder="İsim, hoca, veli veya grup ara..."
           class="px-3.5 py-1.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
@@ -488,6 +553,7 @@
     let students = [];
     let coaches = [];
     let activeSession = null;
+    let bulkSelections = {}; // { [studentId]: 'Geldi' | 'Gelmedi' | 'Telafi' }
 
     const statusBadge = document.getElementById("cloudStatus");
 
@@ -548,16 +614,26 @@
       }));
     }
 
+    function normalizePerfObj(perf) {
+      const p = perf && typeof perf === "object" ? perf : {};
+      return {
+        free: p.free || "",
+        freePrev: p.freePrev || "",
+        back: p.back || "",
+        backPrev: p.backPrev || "",
+        breast: p.breast || "",
+        breastPrev: p.breastPrev || "",
+        fly: p.fly || "",
+        flyPrev: p.flyPrev || ""
+      };
+    }
+
     function normalizeStudent(docId, data) {
       const pInfo = getParentDetails(data);
       const rawPin = data.parentPassword;
       const parentPassword = (typeof rawPin === "string" || typeof rawPin === "number") && String(rawPin).replace(/\D/g, "").length > 0
         ? String(rawPin).replace(/\D/g, "").slice(0, 5)
         : generateFiveDigitPin();
-
-      const perf = data.performanceTimes && typeof data.performanceTimes === "object"
-        ? data.performanceTimes
-        : {};
 
       const coachName = (typeof data.coachName === "string" && data.coachName.trim())
         ? data.coachName.trim()
@@ -581,12 +657,7 @@
         coachName,
         ownerRole,
         group: normalizeGroup(data.group),
-        performanceTimes: {
-          free: perf.free || "",
-          back: perf.back || "",
-          breast: perf.breast || "",
-          fly: perf.fly || ""
-        },
+        performanceTimes: normalizePerfObj(data.performanceTimes),
         ...data,
         group: normalizeGroup(data.group),
         coachName,
@@ -595,7 +666,8 @@
         attendanceHistory: normalizeAttendanceList(data.attendanceHistory),
         startDate: data.startDate || getTodayISO(),
         cycleNumber: typeof data.cycleNumber === "number" ? data.cycleNumber : 1,
-        cycleHistory
+        cycleHistory,
+        performanceTimes: normalizePerfObj(data.performanceTimes)
       };
     }
 
@@ -650,6 +722,7 @@
       closeCycleRestart();
       renderCoachTabs();
       renderStudents();
+      renderBulkAttendanceList();
     }
 
     function getVisibleStudents() {
@@ -703,8 +776,11 @@
           renderStudentInspection(activeSession.inspectedStudentId);
         } else {
           showStaffPanel("admin");
+          renderQuickLookupResults();
+          renderLowLessonsNotes();
           renderCoachTabs();
           renderCoachList();
+          renderBulkAttendanceList();
           renderStudents();
         }
       } else if (isCoachSession()) {
@@ -712,6 +788,7 @@
           renderStudentInspection(activeSession.inspectedStudentId);
         } else {
           showStaffPanel("coach");
+          renderBulkAttendanceList();
           renderStudents();
         }
       } else if (activeSession.role === "parent") {
@@ -722,6 +799,168 @@
           persistSession(null);
           showLoginScreen();
         }
+      }
+    }
+
+    function renderQuickLookupResults() {
+      const container = document.getElementById("quickLookupResults");
+      if (!container || !isAdminSession()) return;
+      const q = (document.getElementById("quickLookupInput")?.value || "").trim().toLowerCase();
+      if (!q) {
+        container.innerHTML = `<span class="text-xs text-slate-400">Aramak için sporcu adını yazın.</span>`;
+        return;
+      }
+      const matches = students.filter(s => (s.name || "").toLowerCase().includes(q));
+      if (matches.length === 0) {
+        container.innerHTML = `<span class="text-xs text-slate-400">Eşleşen sporcu bulunamadı.</span>`;
+        return;
+      }
+      container.innerHTML = matches.map(s => `
+        <button onclick="openStudentDetailAsStaff('${s.id}')"
+          class="px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-xs font-bold text-blue-900 transition">
+          ${s.name} • Veli Şifre: <span class="font-mono text-blue-700">${s.parentPassword}</span>
+        </button>
+      `).join("");
+    }
+
+    function renderLowLessonsNotes() {
+      const listEl = document.getElementById("lowLessonsNotesList");
+      const badgeEl = document.getElementById("lowLessonsBadgeCount");
+      if (!listEl || !badgeEl || !isAdminSession()) return;
+
+      const lowStudents = students.filter(s => {
+        const l = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
+        return l <= 2;
+      });
+
+      badgeEl.textContent = String(lowStudents.length);
+      if (lowStudents.length === 0) {
+        listEl.innerHTML = `<div class="text-xs text-slate-400">Son 2 dersi kalan sporcu bulunmuyor.</div>`;
+        return;
+      }
+
+      listEl.innerHTML = lowStudents.map(s => {
+        const l = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
+        const msg = l === 2 ? "2 dersi kalmıştır" : `${l} dersi kalmıştır`;
+        return `
+          <div class="flex items-center justify-between gap-2 bg-amber-50/80 border border-amber-200/80 rounded-xl px-3 py-2">
+            <button onclick="openStudentDetailAsStaff('${s.id}')" class="text-left font-bold text-slate-800 hover:underline">
+              ${s.name} <span class="font-semibold text-amber-800">— ${msg}</span>
+            </button>
+            <span class="text-[11px] font-mono font-bold text-blue-700 shrink-0">Şifre: ${s.parentPassword}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderBulkAttendanceList() {
+      const container = document.getElementById("bulkAttendanceList");
+      const groupSelect = document.getElementById("bulkGroupSelect");
+      if (!container || !groupSelect) return;
+
+      const selectedGroup = normalizeGroup(groupSelect.value);
+      const pool = getVisibleStudents().filter(s => normalizeGroup(s.group) === selectedGroup);
+
+      if (pool.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-xs text-slate-400 py-2">Bu grupta kayıtlı yüzücü bulunmuyor.</div>`;
+        return;
+      }
+
+      container.innerHTML = pool.map(s => {
+        const curStatus = bulkSelections[s.id] || "Geldi";
+        const btnCls = (st, activeCls) => curStatus === st
+          ? `${activeCls} ring-2 ring-offset-1 ring-blue-400`
+          : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50";
+
+        return `
+          <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50/60">
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-slate-900 truncate">${s.name}</div>
+              <div class="text-[11px] text-slate-500">${s.remainingLessons ?? DEFAULT_LESSONS} ders</div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" onclick="setBulkStudentStatus('${s.id}', 'Geldi')"
+                class="px-2 py-1 rounded-lg text-[11px] font-semibold border transition ${btnCls('Geldi', 'bg-emerald-100 text-emerald-800 border-emerald-300')}">
+                Geldi
+              </button>
+              <button type="button" onclick="setBulkStudentStatus('${s.id}', 'Gelmedi')"
+                class="px-2 py-1 rounded-lg text-[11px] font-semibold border transition ${btnCls('Gelmedi', 'bg-rose-100 text-rose-800 border-rose-300')}">
+                Gelmedi
+              </button>
+              <button type="button" onclick="setBulkStudentStatus('${s.id}', 'Telafi')"
+                class="px-2 py-1 rounded-lg text-[11px] font-semibold border transition ${btnCls('Telafi', 'bg-sky-100 text-sky-800 border-sky-300')}">
+                Telafi
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function setBulkStudentStatus(studentId, status) {
+      bulkSelections[studentId] = status;
+      renderBulkAttendanceList();
+    }
+
+    function setAllBulkStatus(status) {
+      const groupSelect = document.getElementById("bulkGroupSelect");
+      if (!groupSelect) return;
+      const selectedGroup = normalizeGroup(groupSelect.value);
+      const pool = getVisibleStudents().filter(s => normalizeGroup(s.group) === selectedGroup);
+      pool.forEach(s => {
+        bulkSelections[s.id] = status;
+      });
+      renderBulkAttendanceList();
+    }
+
+    async function saveBulkAttendance() {
+      if (!activeSession || (!isAdminSession() && !isCoachSession())) return;
+      const groupSelect = document.getElementById("bulkGroupSelect");
+      if (!groupSelect) return;
+      const selectedGroup = normalizeGroup(groupSelect.value);
+      const pool = getVisibleStudents().filter(s => normalizeGroup(s.group) === selectedGroup);
+      if (pool.length === 0) return;
+
+      const nowStr = formatNowDateTime();
+      let zeroStudentId = null;
+
+      for (const s of pool) {
+        const status = bulkSelections[s.id] || "Geldi";
+        const currentLessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
+        const nextLessons = status === "Geldi" ? Math.max(0, currentLessons - 1) : currentLessons;
+        const nextHistory = [
+          {
+            id: `att_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            date: nowStr,
+            status,
+            note: status === "Telafi" ? "Telafi dersi (Toplu)" : "Toplu yoklama"
+          },
+          ...normalizeAttendanceList(s.attendanceHistory)
+        ];
+
+        if (nextLessons === 0 && !zeroStudentId) {
+          zeroStudentId = s.id;
+        }
+
+        if (useCloud && db) {
+          await db.collection("students").doc(s.id).update({
+            remainingLessons: nextLessons,
+            attendanceHistory: nextHistory
+          });
+        } else {
+          s.remainingLessons = nextLessons;
+          s.attendanceHistory = nextHistory;
+        }
+      }
+
+      if (!useCloud || !db) {
+        saveLocal();
+      } else {
+        refreshActiveView();
+      }
+
+      if (zeroStudentId && isAdminSession()) {
+        openCycleRestart(zeroStudentId);
       }
     }
 
@@ -799,6 +1038,8 @@
       document.getElementById("logoutBtn").classList.remove("hidden");
 
       const isAdmin = role === "admin";
+      document.getElementById("adminQuickToolsGrid").classList.toggle("hidden", !isAdmin);
+      document.getElementById("adminQuickToolsGrid").classList.toggle("grid", isAdmin);
       document.getElementById("coachTabsBar").classList.toggle("hidden", !isAdmin);
       document.getElementById("coachManagementSection").classList.toggle("hidden", !isAdmin);
       document.getElementById("editCoachWrap").classList.toggle("hidden", !isAdmin);
@@ -820,7 +1061,7 @@
       document.getElementById("backToAdminBtn").classList.add("hidden");
       document.getElementById("logoutBtn").classList.remove("hidden");
       document.getElementById("headerSubtitle").textContent = "Veli Bilgilendirme Ekranı";
-      renderParentCards(matches, false);
+      renderParentCards(matches, false, false);
     }
 
     function openStudentDetailAsStaff(studentId) {
@@ -842,7 +1083,7 @@
       document.getElementById("backToAdminBtn").classList.remove("hidden");
       document.getElementById("logoutBtn").classList.remove("hidden");
       document.getElementById("headerSubtitle").textContent = `Öğrenci Detayı & Yoklama Yönetimi: ${target.name}`;
-      renderParentCards([target], isAdminSession());
+      renderParentCards([target], isAdminSession(), isAdminSession());
     }
 
     function backToAdminPanel() {
@@ -857,8 +1098,11 @@
       if (ADMIN_PASSWORDS.includes(pass)) {
         persistSession({ role: "admin", activeCoachTab: "__ADMIN__", inspectedStudentId: null });
         showStaffPanel("admin");
+        renderQuickLookupResults();
+        renderLowLessonsNotes();
         renderCoachTabs();
         renderCoachList();
+        renderBulkAttendanceList();
         renderStudents();
       } else {
         showError("Hatalı yönetici şifresi.");
@@ -878,6 +1122,7 @@
       }
       persistSession({ role: "coach", coachName: found.name, inspectedStudentId: null });
       showStaffPanel("coach");
+      renderBulkAttendanceList();
       renderStudents();
     }
 
@@ -1003,22 +1248,23 @@
 
     function renderPerformanceSection(student) {
       if (student.group !== "Performans") return "";
-      const perf = student.performanceTimes || {};
+      const perf = normalizePerfObj(student.performanceTimes);
       const styles = [
-        { label: "Serbest", val: perf.free },
-        { label: "Sırt", val: perf.back },
-        { label: "Kurbağa", val: perf.breast },
-        { label: "Kelebek", val: perf.fly }
+        { label: "Serbest", prev: perf.freePrev, cur: perf.free },
+        { label: "Sırt", prev: perf.backPrev, cur: perf.back },
+        { label: "Kurbağa", prev: perf.breastPrev, cur: perf.breast },
+        { label: "Kelebek", prev: perf.flyPrev, cur: perf.fly }
       ];
 
       return `
         <div class="bg-white rounded-2xl border border-sky-100 p-5 shadow-sm">
-          <h4 class="text-sm font-bold text-slate-800 mb-3">🏊 Performans Stil Dereceleri</h4>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <h4 class="text-sm font-bold text-slate-800 mb-3">🏊 Performans Stil Dereceleri & Gelişim Kıyaslaması</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             ${styles.map(st => `
-              <div class="bg-sky-50/70 border border-sky-100 rounded-xl p-3">
+              <div class="bg-sky-50/70 border border-sky-100 rounded-xl p-3 space-y-1">
                 <div class="text-[11px] font-bold text-blue-800">${st.label}</div>
-                <div class="text-sm font-extrabold text-slate-900 mt-1">${st.val ? st.val : "Girilmedi"}</div>
+                <div class="text-[11px] text-slate-500">Önceki: <span class="font-semibold text-slate-700">${st.prev || '-'}</span></div>
+                <div class="text-sm font-extrabold text-slate-900">Son: ${st.cur || 'Girilmedi'}</div>
               </div>
             `).join("")}
           </div>
@@ -1048,7 +1294,7 @@
       };
     }
 
-    function renderParentCards(matches, allowAttendanceManage = false) {
+    function renderParentCards(matches, allowAttendanceManage = false, showParentPin = false) {
       const container = document.getElementById("parentResults");
 
       container.innerHTML = matches.map(s => {
@@ -1118,9 +1364,10 @@
                     </span>
                   </div>
                   <h3 class="text-xl sm:text-2xl font-extrabold tracking-tight">${s.name}</h3>
-                  <div class="mt-1.5 flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 text-xs sm:text-sm text-sky-100">
+                  <div class="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-sky-100">
                     <span>👤 Veli: <strong class="font-semibold text-white">${pInfo.parentName}</strong></span>
                     <span>📞 Telefon: <strong class="font-semibold text-white">${pInfo.parentPhone}</strong></span>
+                    ${showParentPin ? `<span>🔑 Veli Şifresi: <strong class="font-mono font-bold text-white bg-white/20 px-2 py-0.5 rounded">${s.parentPassword}</strong></span>` : ""}
                   </div>
                   ${cycleLogHtml}
                 </div>
@@ -1135,7 +1382,7 @@
                 ${lessons === 0
                   ? `<div class="text-[11px] font-bold text-rose-600 mt-1">✓ 8 ders tamamlandı! Yeni tarih bekleniyor.</div>`
                   : lowLessonsWarning
-                    ? `<div class="text-[11px] font-semibold text-amber-600 mt-1">⚠️ Ders paketiniz azaldı!</div>`
+                    ? `<div class="text-[11px] font-semibold text-amber-600 mt-1">⚠️ ${lessons === 2 ? '2 dersi kalmıştır!' : 'Ders paketiniz azaldı!'}</div>`
                     : `<div class="text-[11px] text-slate-400 mt-1">Dönem paketi: ${DEFAULT_LESSONS} ders</div>`
                 }
               </div>
@@ -1215,13 +1462,17 @@
       const coachName = isCoachSession() ? activeSession.coachName : ADMIN_COACH_LABEL;
 
       const performanceTimes = group === "Performans"
-        ? {
+        ? normalizePerfObj({
             free: document.getElementById("sPerfFree").value.trim(),
+            freePrev: document.getElementById("sPerfFreePrev").value.trim(),
             back: document.getElementById("sPerfBack").value.trim(),
+            backPrev: document.getElementById("sPerfBackPrev").value.trim(),
             breast: document.getElementById("sPerfBreast").value.trim(),
-            fly: document.getElementById("sPerfFly").value.trim()
-          }
-        : { free: "", back: "", breast: "", fly: "" };
+            breastPrev: document.getElementById("sPerfBreastPrev").value.trim(),
+            fly: document.getElementById("sPerfFly").value.trim(),
+            flyPrev: document.getElementById("sPerfFlyPrev").value.trim()
+          })
+        : normalizePerfObj({});
 
       const newStudent = {
         name: document.getElementById("sName").value.trim(),
@@ -1389,12 +1640,16 @@
       if (!isAdminSession()) return;
       const s = students.find(x => x.id === studentId);
       if (!s) return;
-      const perf = s.performanceTimes || {};
+      const perf = normalizePerfObj(s.performanceTimes);
       document.getElementById("perfStudentId").value = s.id;
-      document.getElementById("perfEditorTitle").textContent = `${s.name} — Stil Dereceleri`;
+      document.getElementById("perfEditorTitle").textContent = `${s.name} — Stil Dereceleri & Gelişimi`;
+      document.getElementById("editPerfFreePrev").value = perf.freePrev || "";
       document.getElementById("editPerfFree").value = perf.free || "";
+      document.getElementById("editPerfBackPrev").value = perf.backPrev || "";
       document.getElementById("editPerfBack").value = perf.back || "";
+      document.getElementById("editPerfBreastPrev").value = perf.breastPrev || "";
       document.getElementById("editPerfBreast").value = perf.breast || "";
+      document.getElementById("editPerfFlyPrev").value = perf.flyPrev || "";
       document.getElementById("editPerfFly").value = perf.fly || "";
       document.getElementById("perfEditorCard").classList.remove("hidden");
       document.getElementById("perfEditorCard").scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -1412,12 +1667,16 @@
       const s = students.find(x => x.id === id);
       if (!s) return;
 
-      const updatedTimes = {
+      const updatedTimes = normalizePerfObj({
+        freePrev: document.getElementById("editPerfFreePrev").value.trim(),
         free: document.getElementById("editPerfFree").value.trim(),
+        backPrev: document.getElementById("editPerfBackPrev").value.trim(),
         back: document.getElementById("editPerfBack").value.trim(),
+        breastPrev: document.getElementById("editPerfBreastPrev").value.trim(),
         breast: document.getElementById("editPerfBreast").value.trim(),
+        flyPrev: document.getElementById("editPerfFlyPrev").value.trim(),
         fly: document.getElementById("editPerfFly").value.trim()
-      };
+      });
 
       if (useCloud && db) {
         await db.collection("students").doc(id).update({ performanceTimes: updatedTimes });
@@ -1655,7 +1914,7 @@
         const cycleNum = typeof s.cycleNumber === "number" ? s.cycleNumber : 1;
         const history = normalizeAttendanceList(s.attendanceHistory);
         const historyCount = history.length;
-        const perf = s.performanceTimes || {};
+        const perf = normalizePerfObj(s.performanceTimes);
         const coachLabel = s.coachName || ADMIN_COACH_LABEL;
         const payClass = s.paid
           ? "bg-emerald-100 text-emerald-700 border-emerald-200"
@@ -1684,8 +1943,8 @@
         const perfSummaryHtml = s.group === "Performans"
           ? `
             <div class="mt-1.5 text-[11px] text-slate-600 bg-sky-50 border border-sky-100 rounded-lg px-2.5 py-1.5 space-y-0.5">
-              <div><strong class="text-blue-800">Serbest:</strong> ${perf.free || '-'} • <strong class="text-blue-800">Sırt:</strong> ${perf.back || '-'}</div>
-              <div><strong class="text-blue-800">Kurbağa:</strong> ${perf.breast || '-'} • <strong class="text-blue-800">Kelebek:</strong> ${perf.fly || '-'}</div>
+              <div><strong class="text-blue-800">Serbest:</strong> ${perf.freePrev ? perf.freePrev + ' → ' : ''}${perf.free || '-'} • <strong class="text-blue-800">Sırt:</strong> ${perf.backPrev ? perf.backPrev + ' → ' : ''}${perf.back || '-'}</div>
+              <div><strong class="text-blue-800">Kurbağa:</strong> ${perf.breastPrev ? perf.breastPrev + ' → ' : ''}${perf.breast || '-'} • <strong class="text-blue-800">Kelebek:</strong> ${perf.flyPrev ? perf.flyPrev + ' → ' : ''}${perf.fly || '-'}</div>
               ${canManageAdmin ? `
                 <button onclick="openPerfEditor('${s.id}')" class="text-[11px] font-bold text-blue-700 hover:underline pt-0.5">
                   Dereceleri Düzenle
