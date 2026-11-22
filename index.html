@@ -501,8 +501,8 @@
     <div class="bg-white rounded-2xl border border-sky-100 shadow-sm overflow-hidden">
       <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 id="studentTableTitle" class="text-base font-bold text-slate-900">Yüzücü Listesi, Yoklama Kaydı & Ders Hakları</h3>
-          <p id="studentTableSubtitle" class="text-xs text-slate-500 mt-0.5">Varsayılan olarak son eklenen 4 sporcu gösterilir; tümünü görmek için butona basın veya arama yapın.</p>
+          <h3 id="studentTableTitle" class="text-base font-bold text-slate-900">Yüzücü Listesi</h3>
+          <p id="studentTableSubtitle" class="text-xs text-slate-500 mt-0.5">Detay, kayıt tarihi, yoklama ve düzenlemeler için öğrenci adına tıklayın.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <button id="toggleShowAllBtn" type="button" onclick="toggleShowAllStudents()"
@@ -517,8 +517,8 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-sky-50/70 text-xs font-semibold text-slate-600 uppercase">
-              <th class="py-3 px-4">Yüzücü, Hoca & Tarihler</th>
-              <th class="py-3 px-4">Veli Ad Soyad, Tel & Şifre</th>
+              <th class="py-3 px-4">Yüzücü & Hoca</th>
+              <th class="py-3 px-4">Veli & Şifre</th>
               <th class="py-3 px-4">Grup & Program</th>
               <th class="py-3 px-4">Kalan Ders</th>
               <th class="py-3 px-4">Tarihli Yoklama Ekle</th>
@@ -532,7 +532,7 @@
     </div>
   </section>
 
-  <!-- VELİ / ÖĞRENCİ BİLGİLENDİRME EKRANI -->
+  <!-- VELİ / ÖĞRENCİ BİLGİLENDİRME & YÖNETİM EKRANI -->
   <section id="parentSection" class="hidden flex-1 max-w-5xl w-full mx-auto px-4 py-6 space-y-5">
     <div id="parentResults" class="space-y-6"></div>
   </section>
@@ -586,6 +586,14 @@
       const now = new Date();
       const pad = n => String(n).padStart(2, "0");
       return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    }
+
+    function formatTimestampToTR(ts) {
+      if (!ts) return "Belirtilmedi";
+      const d = new Date(ts);
+      if (Number.isNaN(d.getTime())) return "Belirtilmedi";
+      const pad = n => String(n).padStart(2, "0");
+      return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
     }
 
     function setDefaultStartDates() {
@@ -649,6 +657,8 @@
 
       const ownerRole = data.ownerRole === "coach" ? "coach" : "admin";
       const cycleHistory = Array.isArray(data.cycleHistory) ? data.cycleHistory : [];
+      const createdAt = typeof data.createdAt === "number" ? data.createdAt : Date.now();
+      const registrationDate = data.registrationDate || formatTimestampToTR(createdAt);
 
       return {
         id: docId,
@@ -656,6 +666,8 @@
         attendanceHistory: normalizeAttendanceList(data.attendanceHistory),
         birthDate: data.birthDate || "",
         startDate: data.startDate || getTodayISO(),
+        registrationDate,
+        createdAt,
         cycleNumber: typeof data.cycleNumber === "number" ? data.cycleNumber : 1,
         cycleHistory,
         parentName: pInfo.parentName,
@@ -671,6 +683,8 @@
         coachName,
         ownerRole,
         parentPassword,
+        registrationDate,
+        createdAt,
         attendanceHistory: normalizeAttendanceList(data.attendanceHistory),
         startDate: data.startDate || getTodayISO(),
         cycleNumber: typeof data.cycleNumber === "number" ? data.cycleNumber : 1,
@@ -725,7 +739,7 @@
 
     function selectAdminCoachTab(tabKey) {
       if (!isAdminSession()) return;
-      showAllInCurrentTab = false;
+      showAllInCurrentTab = true;
       persistSession({ ...activeSession, activeCoachTab: tabKey, inspectedStudentId: null });
       closeAttendanceEditor();
       closeCycleRestart();
@@ -1078,7 +1092,7 @@
       document.getElementById("backToAdminBtn").classList.add("hidden");
       document.getElementById("logoutBtn").classList.remove("hidden");
       document.getElementById("headerSubtitle").textContent = "Veli Bilgilendirme Ekranı";
-      renderParentCards(matches, false, false);
+      renderParentCards(matches, false, false, false);
     }
 
     function openStudentDetailAsStaff(studentId) {
@@ -1100,7 +1114,8 @@
       document.getElementById("backToAdminBtn").classList.remove("hidden");
       document.getElementById("logoutBtn").classList.remove("hidden");
       document.getElementById("headerSubtitle").textContent = `Öğrenci Detayı & Yoklama Yönetimi: ${target.name}`;
-      renderParentCards([target], isAdminSession(), isAdminSession());
+      const canManage = isAdminSession() || isCoachSession();
+      renderParentCards([target], canManage, isAdminSession(), canManage);
     }
 
     function backToAdminPanel() {
@@ -1267,7 +1282,7 @@
       `).join("");
     }
 
-    function renderPerformanceSection(student) {
+    function renderPerformanceSection(student, showEditBtn = false) {
       if (student.group !== "Performans") return "";
       const perf = normalizePerfObj(student.performanceTimes);
       const styles = [
@@ -1279,7 +1294,14 @@
 
       return `
         <div class="bg-white rounded-2xl border border-sky-100 p-5 shadow-sm">
-          <h4 class="text-sm font-bold text-slate-800 mb-3">🏊 Performans Stil Dereceleri & Gelişim Kıyaslaması</h4>
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <h4 class="text-sm font-bold text-slate-800">🏊 Performans Stil Dereceleri & Gelişim Kıyaslaması</h4>
+            ${showEditBtn ? `
+              <button onclick="openPerfEditorFromDetail('${student.id}')" class="text-xs font-bold text-blue-700 hover:underline">
+                Dereceleri Düzenle
+              </button>
+            ` : ""}
+          </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             ${styles.map(st => `
               <div class="bg-sky-50/70 border border-sky-100 rounded-xl p-3 space-y-1">
@@ -1315,7 +1337,7 @@
       };
     }
 
-    function renderParentCards(matches, allowAttendanceManage = false, showParentPin = false) {
+    function renderParentCards(matches, allowAttendanceManage = false, showParentPin = false, allowFullStaffManage = false) {
       const container = document.getElementById("parentResults");
 
       container.innerHTML = matches.map(s => {
@@ -1325,9 +1347,11 @@
         const pInfo = getParentDetails(s);
         const birthFormatted = formatDateTR(s.birthDate);
         const startFormatted = formatDateTR(s.startDate);
+        const regFormatted = formatDateTR(s.registrationDate || formatTimestampToTR(s.createdAt));
         const cycleNum = typeof s.cycleNumber === "number" ? s.cycleNumber : 1;
         const cycleHistory = Array.isArray(s.cycleHistory) ? s.cycleHistory : [];
         const coachLabel = s.coachName || ADMIN_COACH_LABEL;
+        const canAdminEdit = isAdminSession();
 
         const cycleLogHtml = cycleHistory.length > 0
           ? `<div class="text-[11px] text-sky-100/90 mt-1">Önceki tamamlanan dönemler: ${cycleHistory.map(c => `${c.cycle}. Dönem (${formatDateTR(c.startDate)} → ${formatDateTR(c.completedDate)})`).join(" • ")}</div>`
@@ -1348,7 +1372,7 @@
                     <span class="px-2.5 py-0.5 rounded-md text-xs font-semibold ${st.badge}">
                       ${st.label}
                     </span>
-                    ${allowAttendanceManage ? `
+                    ${canAdminEdit ? `
                       <button onclick="openAttendanceEditorFromDetail('${s.id}', '${item.id}')" class="text-[11px] font-semibold text-blue-700 hover:underline">
                         Düzenle
                       </button>
@@ -1361,8 +1385,97 @@
               `;
             }).join("");
 
+        const staffActionBarHtml = allowFullStaffManage ? `
+          <div class="bg-white rounded-2xl border border-sky-100 p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xs font-bold text-slate-700 mr-1">Yoklama Al:</span>
+              <button onclick="recordAttendance('${s.id}', 'Geldi')"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition">
+                + Geldi
+              </button>
+              <button onclick="recordAttendance('${s.id}', 'Gelmedi')"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-100 text-rose-800 hover:bg-rose-200 transition">
+                + Gelmedi
+              </button>
+              <button onclick="recordAttendance('${s.id}', 'Telafi')"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-100 text-sky-800 hover:bg-sky-200 transition">
+                + Telafi
+              </button>
+            </div>
+            ${canAdminEdit ? `
+              <div class="flex flex-wrap items-center gap-2">
+                <button onclick="openStudentEditorFromDetail('${s.id}')"
+                  class="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition">
+                  Bilgileri Düzenle
+                </button>
+                <button onclick="deleteStudentFromDetail('${s.id}')"
+                  class="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 transition">
+                  Kaydı Sil
+                </button>
+              </div>
+            ` : ""}
+          </div>
+        ` : "";
+
+        const lessonRightBoxHtml = canAdminEdit ? `
+          <div class="bg-white text-slate-800 rounded-xl px-5 py-3.5 shadow-sm min-w-[200px]">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">KALAN DERS HAKKI</div>
+            <div class="flex items-center justify-between gap-2 mt-1">
+              <div class="flex items-baseline gap-1">
+                <span class="text-3xl font-extrabold ${lowLessonsWarning ? 'text-amber-600' : 'text-blue-700'}">${lessons}</span>
+                <span class="text-xs font-semibold text-slate-500">Ders</span>
+              </div>
+              <div class="inline-flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+                <button onclick="adjustLessons('${s.id}', -1)" class="w-6 h-6 rounded bg-white text-slate-800 font-bold text-xs shadow-sm">-</button>
+                <button onclick="adjustLessons('${s.id}', 1)" class="w-6 h-6 rounded bg-white text-slate-800 font-bold text-xs shadow-sm">+</button>
+              </div>
+            </div>
+            ${lessons === 0
+              ? `<button onclick="openCycleRestartFromDetail('${s.id}')" class="mt-2 w-full text-[11px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-2.5 py-1 rounded-lg transition">
+                   ✓ Yeni Tarih Başlat
+                 </button>`
+              : lowLessonsWarning
+                ? `<div class="text-[11px] font-semibold text-amber-600 mt-1">⚠️ ${lessons === 2 ? '2 dersi kalmıştır!' : 'Ders paketiniz azaldı!'}</div>`
+                : `<div class="text-[11px] text-slate-400 mt-1">Dönem paketi: ${DEFAULT_LESSONS} ders</div>`
+            }
+          </div>
+        ` : `
+          <div class="bg-white text-slate-800 rounded-xl px-5 py-3.5 shadow-sm min-w-[180px]">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">KALAN DERS HAKKI</div>
+            <div class="flex items-baseline gap-1.5 mt-1">
+              <span class="text-3xl font-extrabold ${lowLessonsWarning ? 'text-amber-600' : 'text-blue-700'}">${lessons}</span>
+              <span class="text-xs font-semibold text-slate-500">Ders</span>
+            </div>
+            ${lessons === 0
+              ? `<div class="text-[11px] font-bold text-rose-600 mt-1">✓ 8 ders tamamlandı! Yeni tarih bekleniyor.</div>`
+              : lowLessonsWarning
+                ? `<div class="text-[11px] font-semibold text-amber-600 mt-1">⚠️ ${lessons === 2 ? '2 dersi kalmıştır!' : 'Ders paketiniz azaldı!'}</div>`
+                : `<div class="text-[11px] text-slate-400 mt-1">Dönem paketi: ${DEFAULT_LESSONS} ders</div>`
+            }
+          </div>
+        `;
+
+        const paymentBoxHtml = canAdminEdit ? `
+          <div class="flex items-center justify-between gap-3 pt-1">
+            <span class="text-xs font-medium text-slate-600">Güncel Ödeme Durumu</span>
+            <button onclick="togglePayment('${s.id}', ${Boolean(s.paid)})"
+              class="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition ${s.paid ? 'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200' : 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200'}">
+              ${s.paid ? '✓ Ödemesi Tamam (Değiştir)' : '⏳ Ödeme Bekliyor (Ödendi Yap)'}
+            </button>
+          </div>
+        ` : `
+          <div class="flex items-center justify-between gap-3 pt-1">
+            <span class="text-xs font-medium text-slate-600">Güncel Ödeme Durumu</span>
+            <span class="px-3 py-1 rounded-lg text-xs font-bold ${s.paid ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+              ${s.paid ? '✓ Ödemesi Tamam' : '⏳ Ödeme Bekliyor'}
+            </span>
+          </div>
+        `;
+
         return `
           <div class="space-y-4">
+            ${staffActionBarHtml}
+
             <!-- Öğrenci Kimlik & Kalan Ders Kartı -->
             <div class="blu-gradient rounded-2xl p-5 sm:p-6 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-5">
               <div class="flex items-start sm:items-center gap-4">
@@ -1373,6 +1486,9 @@
                   <div class="flex flex-wrap items-center gap-2 mb-1.5">
                     <span class="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/20">
                       ${s.group} • ${cycleNum}. Dönem
+                    </span>
+                    <span class="inline-block text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-white/15 text-sky-50">
+                      📝 Kayıt Tarihi: ${regFormatted}
                     </span>
                     <span class="inline-block text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-white/15 text-sky-50">
                       📅 Başlangıç: ${startFormatted}
@@ -1394,22 +1510,10 @@
                 </div>
               </div>
 
-              <div class="bg-white text-slate-800 rounded-xl px-5 py-3.5 shadow-sm min-w-[180px]">
-                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">KALAN DERS HAKKI</div>
-                <div class="flex items-baseline gap-1.5 mt-1">
-                  <span class="text-3xl font-extrabold ${lowLessonsWarning ? 'text-amber-600' : 'text-blue-700'}">${lessons}</span>
-                  <span class="text-xs font-semibold text-slate-500">Ders</span>
-                </div>
-                ${lessons === 0
-                  ? `<div class="text-[11px] font-bold text-rose-600 mt-1">✓ 8 ders tamamlandı! Yeni tarih bekleniyor.</div>`
-                  : lowLessonsWarning
-                    ? `<div class="text-[11px] font-semibold text-amber-600 mt-1">⚠️ ${lessons === 2 ? '2 dersi kalmıştır!' : 'Ders paketiniz azaldı!'}</div>`
-                    : `<div class="text-[11px] text-slate-400 mt-1">Dönem paketi: ${DEFAULT_LESSONS} ders</div>`
-                }
-              </div>
+              ${lessonRightBoxHtml}
             </div>
 
-            ${renderPerformanceSection(s)}
+            ${renderPerformanceSection(s, canAdminEdit)}
 
             <!-- Alt Bilgi Kartları -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1427,12 +1531,7 @@
                 <!-- Aidat & Ödeme Durumu -->
                 <div class="bg-white rounded-2xl border border-sky-100 p-5 shadow-sm">
                   <h4 class="text-sm font-bold text-slate-800 mb-3">💳 Aidat & Ödeme Durumu</h4>
-                  <div class="flex items-center justify-between gap-3 pt-1">
-                    <span class="text-xs font-medium text-slate-600">Güncel Ödeme Durumu</span>
-                    <span class="px-3 py-1 rounded-lg text-xs font-bold ${s.paid ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
-                      ${s.paid ? '✓ Ödemesi Tamam' : '⏳ Ödeme Bekliyor'}
-                    </span>
-                  </div>
+                  ${paymentBoxHtml}
                 </div>
               </div>
 
@@ -1479,6 +1578,8 @@
       const parentName = document.getElementById("sParentName").value.trim();
       const parentPhone = document.getElementById("sParentPhone").value.trim();
       const startDate = document.getElementById("sStartDate").value || getTodayISO();
+      const nowTs = Date.now();
+      const registrationDate = formatTimestampToTR(nowTs);
       const group = normalizeGroup(document.getElementById("sGroup").value);
       const ownerRole = isCoachSession() ? "coach" : "admin";
       const coachName = isCoachSession() ? activeSession.coachName : ADMIN_COACH_LABEL;
@@ -1500,6 +1601,7 @@
         name: document.getElementById("sName").value.trim(),
         birthDate: document.getElementById("sBirthDate").value,
         startDate,
+        registrationDate,
         cycleNumber: 1,
         cycleHistory: [],
         parentName,
@@ -1514,13 +1616,13 @@
         attendanceHistory: [],
         performanceTimes,
         paid: false,
-        createdAt: Date.now()
+        createdAt: nowTs
       };
 
       if (useCloud && db) {
         await db.collection("students").add(newStudent);
       } else {
-        newStudent.id = String(Date.now());
+        newStudent.id = String(nowTs);
         students.unshift(newStudent);
         saveLocal();
       }
@@ -1528,6 +1630,39 @@
       document.getElementById("sLessons").value = DEFAULT_LESSONS;
       document.getElementById("sStartDate").value = getTodayISO();
       toggleNewPerformanceInputs();
+    }
+
+    function returnToPanelAndRun(studentId, fnName) {
+      if (!activeSession) return;
+      persistSession({ ...activeSession, inspectedStudentId: null });
+      refreshActiveView();
+      if (typeof window[fnName] === "function") {
+        window[fnName](studentId);
+      }
+    }
+
+    function openCycleRestartFromDetail(studentId) {
+      returnToPanelAndRun(studentId, "openCycleRestart");
+    }
+
+    function openStudentEditorFromDetail(studentId) {
+      returnToPanelAndRun(studentId, "openStudentEditor");
+    }
+
+    function openPerfEditorFromDetail(studentId) {
+      returnToPanelAndRun(studentId, "openPerfEditor");
+    }
+
+    async function deleteStudentFromDetail(studentId) {
+      if (!isAdminSession()) return;
+      if (!confirm("Bu öğrenci kaydını silmek istediğinize emin misiniz?")) return;
+      persistSession({ ...activeSession, inspectedStudentId: null });
+      if (useCloud && db) {
+        await db.collection("students").doc(studentId).delete();
+      } else {
+        students = students.filter(x => x.id !== studentId);
+        saveLocal();
+      }
     }
 
     function openCycleRestart(studentId) {
@@ -1845,7 +1980,7 @@
         saveLocal();
       }
 
-      if (nextLessons === 0 && isAdminSession()) {
+      if (nextLessons === 0 && isAdminSession() && !activeSession.inspectedStudentId) {
         openCycleRestart(id);
       }
     }
@@ -1864,7 +1999,7 @@
         saveLocal();
       }
 
-      if (nextLessons === 0 && delta < 0) {
+      if (nextLessons === 0 && delta < 0 && !activeSession.inspectedStudentId) {
         openCycleRestart(id);
       }
     }
@@ -1900,11 +2035,11 @@
       if (titleEl && isAdminSession()) {
         const tab = getAdminSelectedCoachTab();
         if (tab === "__ALL__") {
-          titleEl.textContent = "Tüm Sporcular (Toplu Görünüm), Yoklama Kaydı & Ders Hakları";
+          titleEl.textContent = "Tüm Sporcular (Toplu Görünüm)";
         } else if (tab === "__ADMIN__") {
-          titleEl.textContent = "Benim Sporcularım, Yoklama Kaydı & Ders Hakları";
+          titleEl.textContent = "Benim Sporcularım";
         } else {
-          titleEl.textContent = `${tab} — Sporcuları & Tüm Yoklama Kayıtları`;
+          titleEl.textContent = `${tab} — Sporcuları`;
         }
       }
 
@@ -1968,66 +2103,17 @@
       tbody.innerHTML = displayedStudents.map(s => {
         const lessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
         const pInfo = getParentDetails(s);
-        const birthFormatted = formatDateTR(s.birthDate);
-        const startFormatted = formatDateTR(s.startDate);
-        const cycleNum = typeof s.cycleNumber === "number" ? s.cycleNumber : 1;
-        const history = normalizeAttendanceList(s.attendanceHistory);
-        const historyCount = history.length;
-        const perf = normalizePerfObj(s.performanceTimes);
         const coachLabel = s.coachName || ADMIN_COACH_LABEL;
         const payClass = s.paid
           ? "bg-emerald-100 text-emerald-700 border-emerald-200"
           : "bg-amber-100 text-amber-700 border-amber-200";
 
-        const recentHistoryHtml = canManageAdmin && history.length > 0
-          ? `
-            <div class="mt-2 space-y-1 max-h-28 overflow-y-auto pr-1">
-              ${history.map(item => {
-                const st = getAttendanceBadgeStyle(item.status);
-                return `
-                  <div class="flex items-center justify-between gap-1.5 text-[11px] bg-slate-50 border border-slate-200/80 rounded-lg px-2 py-1">
-                    <span class="text-slate-600 truncate">${item.date}</span>
-                    <span class="px-1.5 py-0.5 rounded font-semibold ${st.badge}">${st.label}</span>
-                    <span class="flex items-center gap-1 shrink-0">
-                      <button onclick="openAttendanceEditor('${s.id}', '${item.id}')" class="text-blue-700 hover:underline font-semibold">Düzenle</button>
-                      <button onclick="deleteAttendanceRecord('${s.id}', '${item.id}')" class="text-rose-600 hover:underline font-semibold">Sil</button>
-                    </span>
-                  </div>
-                `;
-              }).join("")}
-            </div>
-          `
-          : "";
-
-        const perfSummaryHtml = s.group === "Performans"
-          ? `
-            <div class="mt-1.5 text-[11px] text-slate-600 bg-sky-50 border border-sky-100 rounded-lg px-2.5 py-1.5 space-y-0.5">
-              <div><strong class="text-blue-800">Serbest:</strong> ${perf.freePrev ? perf.freePrev + ' → ' : ''}${perf.free || '-'} • <strong class="text-blue-800">Sırt:</strong> ${perf.backPrev ? perf.backPrev + ' → ' : ''}${perf.back || '-'}</div>
-              <div><strong class="text-blue-800">Kurbağa:</strong> ${perf.breastPrev ? perf.breastPrev + ' → ' : ''}${perf.breast || '-'} • <strong class="text-blue-800">Kelebek:</strong> ${perf.flyPrev ? perf.flyPrev + ' → ' : ''}${perf.fly || '-'}</div>
-              ${canManageAdmin ? `
-                <button onclick="openPerfEditor('${s.id}')" class="text-[11px] font-bold text-blue-700 hover:underline pt-0.5">
-                  Dereceleri Düzenle
-                </button>
-              ` : ""}
-            </div>
-          `
-          : "";
-
         const lessonCellHtml = canManageAdmin
           ? `
-            <div class="space-y-1.5">
-              <div class="inline-flex items-center gap-1.5 bg-slate-100 rounded-lg px-2 py-1">
-                <button onclick="adjustLessons('${s.id}', -1)" class="w-5 h-5 rounded bg-white text-slate-700 font-bold text-xs shadow-sm">-</button>
-                <span class="text-xs font-extrabold text-blue-800 min-w-[48px] text-center">${lessons} Ders</span>
-                <button onclick="adjustLessons('${s.id}', 1)" class="w-5 h-5 rounded bg-white text-slate-700 font-bold text-xs shadow-sm">+</button>
-              </div>
-              ${lessons === 0 ? `
-                <div>
-                  <button onclick="openCycleRestart('${s.id}')" class="text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-md transition">
-                    Yeni Tarih Başlat
-                  </button>
-                </div>
-              ` : ""}
+            <div class="inline-flex items-center gap-1.5 bg-slate-100 rounded-lg px-2 py-1">
+              <button onclick="adjustLessons('${s.id}', -1)" class="w-5 h-5 rounded bg-white text-slate-700 font-bold text-xs shadow-sm">-</button>
+              <span class="text-xs font-extrabold text-blue-800 min-w-[48px] text-center">${lessons} Ders</span>
+              <button onclick="adjustLessons('${s.id}', 1)" class="w-5 h-5 rounded bg-white text-slate-700 font-bold text-xs shadow-sm">+</button>
             </div>
           `
           : `<span class="text-xs font-extrabold text-blue-800">${lessons} Ders</span>`;
@@ -2065,20 +2151,15 @@
                 <div class="font-bold text-blue-800 group-hover:underline">
                   ${s.name} <span class="text-xs font-semibold text-slate-600">• Hoca: ${coachLabel}</span>
                 </div>
-                <div class="text-[11px] text-slate-400">${historyCount} yoklama kaydı • Kartı Aç</div>
               </button>
-              <div class="text-xs text-slate-600 mt-0.5">Başlangıç (${cycleNum}. Dönem): <strong>${startFormatted}</strong></div>
-              <div class="text-xs text-slate-500">Doğum: ${birthFormatted}</div>
             </td>
             <td class="py-3 px-4">
               <div class="text-xs font-semibold text-slate-800">${pInfo.parentName}</div>
-              <div class="text-xs text-slate-500">${pInfo.parentPhone}</div>
               <div class="text-[11px] font-mono font-bold text-blue-700 mt-0.5">Şifre: ${s.parentPassword}</div>
             </td>
             <td class="py-3 px-4">
               <div class="text-xs font-semibold text-blue-700">${s.group}</div>
               <div class="text-xs text-slate-500">${s.schedule}</div>
-              ${perfSummaryHtml}
             </td>
             <td class="py-3 px-4">
               ${lessonCellHtml}
@@ -2098,7 +2179,6 @@
                   + Telafi
                 </button>
               </div>
-              ${recentHistoryHtml}
             </td>
             <td class="py-3 px-4">
               ${paymentCellHtml}
