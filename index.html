@@ -120,7 +120,7 @@
     <!-- Özet Kartlar -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
       <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-sm">
-        <p class="text-xs text-slate-500 font-medium">Görünen Yüzücü</p>
+        <p class="text-xs text-slate-500 font-medium">Sekmedeki Yüzücü</p>
         <p id="statTotal" class="text-2xl font-extrabold text-blue-700 mt-1">0</p>
       </div>
       <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-sm">
@@ -163,7 +163,7 @@
       </div>
     </div>
 
-    <!-- Sadece Yönetici: Antrenör Sekmeleri -->
+    <!-- Sadece Yönetici: Antrenör Sekmeleri & Tüm Sporcular Sekmesi -->
     <div id="coachTabsBar" class="hidden bg-white p-3 rounded-2xl border border-sky-100 shadow-sm">
       <div id="coachTabsContainer" class="flex flex-wrap items-center gap-2"></div>
     </div>
@@ -502,10 +502,16 @@
       <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 id="studentTableTitle" class="text-base font-bold text-slate-900">Yüzücü Listesi, Yoklama Kaydı & Ders Hakları</h3>
-          <p class="text-xs text-slate-500 mt-0.5">Veli şifresi dahil tüm bilgileri ve yoklama geçmişini açmak için yüzücü adına tıklayın.</p>
+          <p id="studentTableSubtitle" class="text-xs text-slate-500 mt-0.5">Varsayılan olarak son eklenen 4 sporcu gösterilir; tümünü görmek için butona basın veya arama yapın.</p>
         </div>
-        <input type="text" id="searchInput" oninput="renderStudents()" placeholder="İsim, hoca, veli veya grup ara..."
-          class="px-3.5 py-1.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="toggleShowAllBtn" type="button" onclick="toggleShowAllStudents()"
+            class="px-3 py-1.5 rounded-xl border border-sky-200 bg-sky-50 text-blue-800 hover:bg-sky-100 text-xs font-bold transition">
+            Tümünü Göster
+          </button>
+          <input type="text" id="searchInput" oninput="renderStudents()" placeholder="İsim, hoca, veli veya grup ara..."
+            class="px-3.5 py-1.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
@@ -546,6 +552,7 @@
     const ADMIN_PASSWORDS = ["12345"];
     const ADMIN_COACH_LABEL = "Yönetici";
     const DEFAULT_LESSONS = 8;
+    const DEFAULT_VISIBLE_LIMIT = 4;
     const SESSION_KEY = "blu_academy_session_v1";
 
     let db = null;
@@ -553,7 +560,8 @@
     let students = [];
     let coaches = [];
     let activeSession = null;
-    let bulkSelections = {}; // { [studentId]: 'Geldi' | 'Gelmedi' | 'Telafi' }
+    let bulkSelections = {};
+    let showAllInCurrentTab = false;
 
     const statusBadge = document.getElementById("cloudStatus");
 
@@ -717,6 +725,7 @@
 
     function selectAdminCoachTab(tabKey) {
       if (!isAdminSession()) return;
+      showAllInCurrentTab = false;
       persistSession({ ...activeSession, activeCoachTab: tabKey, inspectedStudentId: null });
       closeAttendanceEditor();
       closeCycleRestart();
@@ -725,9 +734,17 @@
       renderBulkAttendanceList();
     }
 
+    function toggleShowAllStudents() {
+      showAllInCurrentTab = !showAllInCurrentTab;
+      renderStudents();
+    }
+
     function getVisibleStudents() {
       if (isAdminSession()) {
         const tab = getAdminSelectedCoachTab();
+        if (tab === "__ALL__") {
+          return students;
+        }
         if (tab === "__ADMIN__") {
           return students.filter(s => s.ownerRole !== "coach");
         }
@@ -1096,6 +1113,7 @@
       e.preventDefault();
       const pass = document.getElementById("adminPass").value.trim();
       if (ADMIN_PASSWORDS.includes(pass)) {
+        showAllInCurrentTab = false;
         persistSession({ role: "admin", activeCoachTab: "__ADMIN__", inspectedStudentId: null });
         showStaffPanel("admin");
         renderQuickLookupResults();
@@ -1120,6 +1138,7 @@
         showError("Antrenör adı veya 5 haneli şifresi hatalı.");
         return;
       }
+      showAllInCurrentTab = false;
       persistSession({ role: "coach", coachName: found.name, inspectedStudentId: null });
       showStaffPanel("coach");
       renderBulkAttendanceList();
@@ -1206,13 +1225,15 @@
 
       const selectedTab = getAdminSelectedCoachTab();
       const adminCount = students.filter(s => s.ownerRole !== "coach").length;
+      const allCount = students.length;
 
       const tabs = [
         { key: "__ADMIN__", label: `Benim Sporcularım (${adminCount})` },
         ...coaches.map(c => {
           const cnt = students.filter(s => s.ownerRole === "coach" && (s.coachName || "").trim().toLowerCase() === c.name.toLowerCase()).length;
           return { key: c.name, label: `${c.name} (${cnt})` };
-        })
+        }),
+        { key: "__ALL__", label: `Tüm Sporcular (${allCount})` }
       ];
 
       container.innerHTML = tabs.map(t => {
@@ -1441,6 +1462,7 @@
 
     function logout() {
       persistSession(null);
+      showAllInCurrentTab = false;
       closePerfEditor();
       closeStudentEditor();
       closeAttendanceEditor();
@@ -1872,15 +1894,25 @@
     function renderStudents() {
       const pool = getVisibleStudents();
       const titleEl = document.getElementById("studentTableTitle");
+      const subtitleEl = document.getElementById("studentTableSubtitle");
+      const toggleAllBtn = document.getElementById("toggleShowAllBtn");
+
       if (titleEl && isAdminSession()) {
         const tab = getAdminSelectedCoachTab();
-        titleEl.textContent = tab === "__ADMIN__"
-          ? "Yüzücü Listesi (Benim Sporcularım), Yoklama Kaydı & Ders Hakları"
-          : `${tab} — Sporcu Listesi & Tüm Yoklama Kayıtları`;
+        if (tab === "__ALL__") {
+          titleEl.textContent = "Tüm Sporcular (Toplu Görünüm), Yoklama Kaydı & Ders Hakları";
+        } else if (tab === "__ADMIN__") {
+          titleEl.textContent = "Benim Sporcularım, Yoklama Kaydı & Ders Hakları";
+        } else {
+          titleEl.textContent = `${tab} — Sporcuları & Tüm Yoklama Kayıtları`;
+        }
       }
 
-      const filter = (document.getElementById("searchInput")?.value || "").toLowerCase();
-      const filtered = pool.filter(s => {
+      const rawFilter = (document.getElementById("searchInput")?.value || "").trim();
+      const filter = rawFilter.toLowerCase();
+
+      const matchedPool = pool.filter(s => {
+        if (!filter) return true;
         const pInfo = getParentDetails(s);
         return (
           (s.name || "").toLowerCase().includes(filter) ||
@@ -1893,6 +1925,33 @@
         );
       });
 
+      const shouldShowAll = showAllInCurrentTab || filter.length > 0;
+      const displayedStudents = shouldShowAll
+        ? matchedPool
+        : matchedPool.slice(0, DEFAULT_VISIBLE_LIMIT);
+
+      if (toggleAllBtn) {
+        if (filter.length > 0) {
+          toggleAllBtn.textContent = `Arama Sonucu (${matchedPool.length})`;
+        } else if (matchedPool.length > DEFAULT_VISIBLE_LIMIT) {
+          toggleAllBtn.textContent = showAllInCurrentTab
+            ? `Son ${DEFAULT_VISIBLE_LIMIT} Sporcuyu Göster`
+            : `Tümünü Göster (${matchedPool.length})`;
+        } else {
+          toggleAllBtn.textContent = `Tümü Göster (${matchedPool.length})`;
+        }
+      }
+
+      if (subtitleEl) {
+        if (filter.length > 0) {
+          subtitleEl.textContent = `"${rawFilter}" araması için ${matchedPool.length} sporcu listeleniyor.`;
+        } else if (showAllInCurrentTab) {
+          subtitleEl.textContent = `Bu sekmedeki tüm ${matchedPool.length} sporcu listeleniyor.`;
+        } else {
+          subtitleEl.textContent = `Bu sekmede son eklenen ${displayedStudents.length} sporcu gösteriliyor (Toplam: ${matchedPool.length}).`;
+        }
+      }
+
       const totalLessons = pool.reduce((sum, s) => sum + (typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS), 0);
       document.getElementById("statTotal").textContent = pool.length;
       document.getElementById("statLessons").textContent = totalLessons;
@@ -1901,12 +1960,12 @@
 
       const canManageAdmin = isAdminSession();
       const tbody = document.getElementById("studentTableBody");
-      if (filtered.length === 0) {
+      if (displayedStudents.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">Henüz kayıtlı yüzücü bulunmuyor.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = filtered.map(s => {
+      tbody.innerHTML = displayedStudents.map(s => {
         const lessons = typeof s.remainingLessons === "number" ? s.remainingLessons : DEFAULT_LESSONS;
         const pInfo = getParentDetails(s);
         const birthFormatted = formatDateTR(s.birthDate);
